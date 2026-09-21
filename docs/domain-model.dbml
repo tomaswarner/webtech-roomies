@@ -1,0 +1,129 @@
+Table users {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  role varchar [default: 'member']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table neighborhoods {
+  id bigint [pk, increment]
+  name varchar [unique]
+}
+
+Table amenities {
+  id bigint [pk, increment]
+  name varchar [unique]
+}
+
+Table properties {
+  id bigint [pk, increment]
+  host_id bigint
+  neighborhood_id bigint
+  address varchar
+  property_type varchar
+  bedrooms_count integer
+  bathrooms_count integer
+  shared_spaces_description text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table property_amenities {
+  id bigint [pk, increment]
+  property_id bigint
+  amenity_id bigint
+}
+
+Table listings {
+  id bigint [pk, increment]
+  property_id bigint
+  status varchar [default: 'draft']
+  monthly_rent decimal(10,2)
+  deposit decimal(10,2)
+  available_on date
+  minimum_stay_months integer
+  furnished boolean
+  private_bathroom boolean
+  description text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table listing_photos {
+  id bigint [pk, increment]
+  listing_id bigint
+  image_url varchar
+  position integer
+  created_at timestamp
+}
+
+Table applications {
+  id bigint [pk, increment]
+  listing_id bigint
+  seeker_id bigint
+  message text
+  move_in_date date
+  stay_duration_months integer
+  status varchar [default: 'pending']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table visits {
+  id bigint [pk, increment]
+  application_id bigint
+  scheduled_at timestamp
+  status varchar [default: 'proposed']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table reviews {
+  id bigint [pk, increment]
+  property_id bigint
+  visit_id bigint [unique]
+  seeker_id bigint
+  rating integer
+  comment text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table saved_listings {
+  id bigint [pk, increment]
+  seeker_id bigint
+  listing_id bigint
+  created_at timestamp
+}
+
+Table reports {
+  id bigint [pk, increment]
+  listing_id bigint
+  reporter_id bigint
+  reason text
+  status varchar [default: 'pending']
+  resolved_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: properties.host_id > users.id
+Ref: properties.neighborhood_id > neighborhoods.id
+Ref: property_amenities.property_id > properties.id
+Ref: property_amenities.amenity_id > amenities.id
+Ref: listings.property_id > properties.id
+Ref: listing_photos.listing_id > listings.id
+Ref: applications.listing_id > listings.id
+Ref: applications.seeker_id > users.id
+Ref: visits.application_id > applications.id
+Ref: reviews.property_id > properties.id
+Ref: reviews.visit_id > visits.id
+Ref: reviews.seeker_id > users.id
+Ref: saved_listings.seeker_id > users.id
+Ref: saved_listings.listing_id > listings.id
+Ref: reports.listing_id > listings.id
+Ref: reports.reporter_id > users.id
+Ref: reports.resolved_by > users.id
+
