@@ -65,4 +65,4 @@ group :test do
 end
 
 # json 3.x removed the quirks_mode option that Rails 8.0 still passes
-gem "json", "~> 2.9"
+gem "json", "~> 3.0"
