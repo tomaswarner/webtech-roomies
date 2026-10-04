@@ -1,0 +1,32 @@
+<% content_for :title, @property.address %>
+<%= render "shared/page_header", title: @property.address,
+           subtitle: "#{@property.neighborhood.name} · #{@property.property_type.humanize} · Hosted by #{@property.host.name}" %>
+
+<div class="container">
+  <p class="text-muted">
+    <%= pluralize(@property.bedrooms_count, "bedroom") %> · <%= pluralize(@property.bathrooms_count, "bathroom") %>
+  </p>
+  <% if @property.shared_spaces_description.present? %>
+    <p><%= @property.shared_spaces_description %></p>
+  <% end %>
+  <% if @property.amenities.any? %>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <% @property.amenities.sort_by(&:name).each do |amenity| %>
+        <span class="badge rounded-pill text-bg-secondary"><%= amenity.name %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <h2 class="h4 mb-3">Rooms</h2>
+  <% if @listings.any? %>
+    <div class="row g-4">
+      <% @listings.each do |listing| %>
+        <div class="col-md-6 col-lg-4"><%= render listing %></div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "This property has no rooms on offer right now.", icon: "door-closed" %>
+  <% end %>
+
+  <%= render "reviews/list", reviews: @reviews, property: @property %>
+</div>

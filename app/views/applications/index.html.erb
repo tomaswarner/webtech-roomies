@@ -1,0 +1,31 @@
+<% content_for :title, "Applications" %>
+<%= render "shared/page_header", title: "Applications", subtitle: "Requests from seekers to hosts" %>
+
+<div class="container">
+  <% if @applications.any? %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr><th>Seeker</th><th>Room</th><th>Move in</th><th>Stay</th><th>Status</th><th>Sent</th></tr>
+        </thead>
+        <tbody>
+          <% @applications.each do |application| %>
+            <tr>
+              <td><%= link_to application.seeker.name, application %></td>
+              <td>
+                <%= application.listing.title %><br>
+                <span class="small text-muted"><%= application.listing.property.neighborhood.name %></span>
+              </td>
+              <td><%= l(application.move_in_date, format: :long) %></td>
+              <td><%= stay_text(application.stay_duration_months) %></td>
+              <td><%= status_badge(application.status) %></td>
+              <td class="text-muted small"><%= time_ago_in_words(application.created_at) %> ago</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "There are no applications yet.", icon: "envelope" %>
+  <% end %>
+</div>

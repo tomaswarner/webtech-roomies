@@ -1,0 +1,19 @@
+<%= form_with url: listings_path, method: :get, class: "row g-3 align-items-end", data: { turbo_frame: "_top" } do |f| %>
+  <div class="col-md-3">
+    <%= f.label :neighborhood_id, "Neighborhood", class: "form-label" %>
+    <%= f.select :neighborhood_id, options_from_collection_for_select(neighborhoods, :id, :name, params[:neighborhood_id]),
+                 { include_blank: "Any neighborhood" }, class: "form-select" %>
+  </div>
+  <div class="col-md-3">
+    <%= f.label :max_rent, "Max rent (CLP)", class: "form-label" %>
+    <%= f.number_field :max_rent, value: params[:max_rent], min: 0, step: 10_000, placeholder: "400000", class: "form-control" %>
+  </div>
+  <div class="col-md-3">
+    <%= f.label :available_from, "Move in by", class: "form-label" %>
+    <%= f.date_field :available_from, value: params[:available_from], class: "form-control" %>
+  </div>
+  <div class="col-md-3">
+    <%= f.submit "Search", name: nil, class: "btn btn-primary w-100" %>
+  </div>
+
+<% end %>

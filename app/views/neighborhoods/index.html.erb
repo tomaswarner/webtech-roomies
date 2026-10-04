@@ -1,0 +1,19 @@
+<% content_for :title, "Neighborhoods" %>
+<%= render "shared/page_header", title: "Neighborhoods", subtitle: "Browse rooms by area" %>
+
+<div class="container">
+  <div class="row g-4">
+    <% @neighborhoods.each do |neighborhood| %>
+      <% published = @published_counts.fetch(neighborhood.id, 0) %>
+      <div class="col-sm-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h2 class="h5"><%= link_to neighborhood.name, neighborhood, class: "stretched-link text-reset text-decoration-none" %></h2>
+            <p class="mb-1"><%= pluralize(published, "room") %> available</p>
+            <p class="small text-muted mb-0"><%= pluralize(@property_counts.fetch(neighborhood.id, 0), "property") %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

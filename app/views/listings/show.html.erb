@@ -1,0 +1,63 @@
+<% content_for :title, @listing.title %>
+<%= render "shared/page_header", title: @listing.title,
+           subtitle: "#{@property.address}, #{@property.neighborhood.name}" %>
+
+<div class="container">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <% if @listing.photos.any? %>
+        <div class="row g-2 mb-4">
+          <% @listing.photos.each do |photo| %>
+            <div class="col-md-6">
+              <%= image_tag photo.image_url, alt: photo.caption.presence || @listing.title, class: "img-fluid rounded listing-photo w-100" %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="rounded overflow-hidden mb-4"><%= render "shared/photo_placeholder" %></div>
+      <% end %>
+
+      <h2 class="h4">About this room</h2>
+      <p><%= @listing.description.presence || "The host has not added a description yet." %></p>
+      <ul class="list-inline">
+        <% room_features(@listing).each do |feature| %>
+          <li class="list-inline-item"><span class="badge text-bg-light border"><%= feature %></span></li>
+        <% end %>
+      </ul>
+
+      <h2 class="h4 mt-4">The property</h2>
+      <p class="mb-1"><%= link_to @property.to_s, @property %></p>
+      <p class="text-muted">
+        <%= @property.property_type.humanize %> · <%= pluralize(@property.bedrooms_count, "bedroom") %> ·
+        <%= pluralize(@property.bathrooms_count, "bathroom") %> · Hosted by <%= @property.host.name %>
+      </p>
+      <% if @property.shared_spaces_description.present? %>
+        <p><%= @property.shared_spaces_description %></p>
+      <% end %>
+      <% if @property.amenities.any? %>
+        <div class="d-flex flex-wrap gap-2">
+          <% @property.amenities.sort_by(&:name).each do |amenity| %>
+            <span class="badge rounded-pill text-bg-secondary"><%= amenity.name %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= render "reviews/list", reviews: @reviews, property: @property %>
+    </div>
+
+    <aside class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="display-6 fw-semibold mb-0"><%= money(@listing.monthly_rent) %></p>
+          <p class="text-muted">per month</p>
+          <p class="mb-2"><%= status_badge(@listing.status) %></p>
+          <dl class="mb-0">
+            <dt>Deposit</dt><dd><%= money(@listing.deposit) %></dd>
+            <dt>Availability</dt><dd><%= availability_text(@listing) %></dd>
+            <dt>Minimum stay</dt><dd class="mb-0"><%= stay_text(@listing.minimum_stay_months) %></dd>
+          </dl>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

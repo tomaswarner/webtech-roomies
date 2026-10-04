@@ -2,6 +2,7 @@ Table users {
   id bigint [pk, increment]
   name varchar
   email varchar [unique]
+  phone varchar
   role varchar [default: 'member']
   created_at timestamp
   updated_at timestamp
@@ -10,11 +11,15 @@ Table users {
 Table neighborhoods {
   id bigint [pk, increment]
   name varchar [unique]
+  created_at timestamp
+  updated_at timestamp
 }
 
 Table amenities {
   id bigint [pk, increment]
   name varchar [unique]
+  created_at timestamp
+  updated_at timestamp
 }
 
 Table properties {
@@ -34,11 +39,18 @@ Table property_amenities {
   id bigint [pk, increment]
   property_id bigint
   amenity_id bigint
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (property_id, amenity_id) [unique]
+  }
 }
 
 Table listings {
   id bigint [pk, increment]
   property_id bigint
+  title varchar
   status varchar [default: 'draft']
   monthly_rent decimal(10,2)
   deposit decimal(10,2)
@@ -55,8 +67,10 @@ Table listing_photos {
   id bigint [pk, increment]
   listing_id bigint
   image_url varchar
+  caption varchar
   position integer
   created_at timestamp
+  updated_at timestamp
 }
 
 Table applications {
@@ -69,6 +83,11 @@ Table applications {
   status varchar [default: 'pending']
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (listing_id, seeker_id) [unique]
+    listing_id [unique, note: 'only where status = accepted']
+  }
 }
 
 Table visits {
@@ -96,15 +115,21 @@ Table saved_listings {
   seeker_id bigint
   listing_id bigint
   created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (seeker_id, listing_id) [unique]
+  }
 }
 
 Table reports {
   id bigint [pk, increment]
   listing_id bigint
   reporter_id bigint
-  reason text
+  reason varchar
+  details text
   status varchar [default: 'pending']
-  resolved_by bigint
+  resolved_by_id bigint
   created_at timestamp
   updated_at timestamp
 }
@@ -125,5 +150,5 @@ Ref: saved_listings.seeker_id > users.id
 Ref: saved_listings.listing_id > listings.id
 Ref: reports.listing_id > listings.id
 Ref: reports.reporter_id > users.id
-Ref: reports.resolved_by > users.id
+Ref: reports.resolved_by_id > users.id
 

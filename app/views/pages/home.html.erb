@@ -1,0 +1,54 @@
+<% content_for :title, "Find your next room" %>
+
+<header class="hero text-white text-center">
+  <div class="container py-5">
+    <h1 class="display-4 fw-bold">A room in a shared home, made simple</h1>
+    <p class="lead">Roomies connects people with a free room to people looking for a place to live.</p>
+    <a href="#search" class="btn btn-light btn-lg mt-3">Find a room</a>
+  </div>
+</header>
+
+<section id="search" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-4">Search listings</h2>
+    <%= render "listings/search_form", neighborhoods: @neighborhoods %>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-4">Featured listings</h2>
+    <% if @featured_listings.any? %>
+      <div class="row g-4">
+        <% @featured_listings.each do |listing| %>
+          <div class="col-md-4"><%= render listing %></div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state", message: "No listings are published yet.", icon: "house" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5">How it works</h2>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="step-number mx-auto mb-3">1</div>
+        <h3 class="h5">Publish or search</h3>
+        <p>Hosts publish a room, seekers search by neighborhood, price, and availability.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-number mx-auto mb-3">2</div>
+        <h3 class="h5">Apply</h3>
+        <p>Seekers apply with a short message, hosts review and shortlist who they like.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-number mx-auto mb-3">3</div>
+        <h3 class="h5">Visit and move in</h3>
+        <p>Shortlisted seekers visit the room, and the host accepts one to move in.</p>
+      </div>
+    </div>
+  </div>
+</section>

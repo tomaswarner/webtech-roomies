@@ -1,0 +1,16 @@
+<% content_for :title, @neighborhood.name %>
+<%= render "shared/page_header", title: @neighborhood.name,
+           subtitle: "#{pluralize(@listings.size, 'room')} available" %>
+
+<div class="container">
+  <h2 class="h4 mb-3">Available rooms</h2>
+  <% if @listings.any? %>
+    <div class="row g-4">
+      <% @listings.each do |listing| %>
+        <div class="col-md-6 col-lg-4"><%= render listing %></div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "No rooms are published in #{@neighborhood.name} right now.", icon: "geo-alt" %>
+  <% end %>
+</div>

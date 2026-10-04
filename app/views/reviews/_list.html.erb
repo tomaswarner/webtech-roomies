@@ -1,0 +1,11 @@
+<section class="mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h4 mb-0">Reviews <span class="text-muted fs-6">(<%= reviews.size %>)</span></h2>
+    <%= rating_stars(property.average_rating) %>
+  </div>
+  <% if reviews.any? %>
+    <%= render reviews %>
+  <% else %>
+    <%= render "shared/empty_state", message: "Nobody has reviewed this property yet.", icon: "chat-square-text" %>
+  <% end %>
+</section>

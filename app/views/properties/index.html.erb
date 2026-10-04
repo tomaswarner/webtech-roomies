@@ -1,0 +1,26 @@
+<% content_for :title, "Properties" %>
+<%= render "shared/page_header", title: "Properties", subtitle: "Every shared home on Roomies" %>
+
+<div class="container">
+  <% if @properties.any? %>
+    <div class="row g-4">
+      <% @properties.each do |property| %>
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <p class="small text-uppercase text-muted mb-1"><i class="bi bi-geo-alt"></i> <%= property.neighborhood.name %></p>
+              <h2 class="h5"><%= link_to property.address, property, class: "stretched-link text-reset text-decoration-none" %></h2>
+              <p class="text-muted small mb-2">
+                <%= property.property_type.humanize %> · <%= pluralize(property.bedrooms_count, "bedroom") %> ·
+                <%= pluralize(property.bathrooms_count, "bathroom") %>
+              </p>
+              <p class="small mb-1">Hosted by <%= property.host.name %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "There are no properties yet.", icon: "buildings" %>
+  <% end %>
+</div>
