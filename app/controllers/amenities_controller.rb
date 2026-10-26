@@ -1,13 +1,9 @@
 class AmenitiesController < ApplicationController
-  before_action :set_amenity, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_amenity, only: [ :edit, :update, :destroy ]
 
   def index
     @amenities = Amenity.by_name
     @property_counts = PropertyAmenity.group(:amenity_id).count
-  end
-
-  def show
-    @properties = @amenity.properties.includes(:neighborhood).by_address
   end
 
   def new
@@ -39,9 +35,9 @@ class AmenitiesController < ApplicationController
 
   def destroy
     if @amenity.destroy
-      redirect_to amenities_path, notice: "Amenity deleted."
+      redirect_to amenities_path, status: :see_other, notice: "Amenity deleted."
     else
-      redirect_to amenities_path, alert: "The amenity can't be deleted: #{@amenity.errors.full_messages.to_sentence}."
+      redirect_to amenities_path, status: :see_other, alert: "The amenity can't be deleted: #{@amenity.errors.full_messages.to_sentence}."
     end
   end
 

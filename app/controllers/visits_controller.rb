@@ -1,5 +1,5 @@
 class VisitsController < ApplicationController
-  before_action :set_visit, only: [ :edit, :update, :confirm, :cancel, :complete ]
+  before_action :set_visit, only: [ :edit, :update ]
 
   # The host proposes a visit on a shortlisted application.
   def new
@@ -23,25 +23,20 @@ class VisitsController < ApplicationController
   def edit
   end
 
+  # The reschedule form sends a new time; the confirm, cancel and complete buttons send a new status.
   def update
-    if @visit.reschedule(visit_params[:scheduled_at])
-      redirect_to @visit.application, notice: "Visit rescheduled for #{I18n.l(@visit.scheduled_at, format: :long)}."
+    if visit_params.key?(:scheduled_at)
+      if @visit.reschedule(visit_params[:scheduled_at])
+        redirect_to @visit.application, notice: "Visit rescheduled for #{I18n.l(@visit.scheduled_at, format: :long)}."
+      else
+        flash.now[:alert] = "The visit could not be rescheduled."
+        render :edit, status: :unprocessable_content
+      end
+    elsif @visit.update(status: visit_params[:status])
+      redirect_to @visit.application, notice: "The visit is now #{@visit.status}."
     else
-      flash.now[:alert] = "The visit could not be rescheduled."
-      render :edit, status: :unprocessable_content
+      redirect_to @visit.application, alert: @visit.errors.full_messages.to_sentence
     end
-  end
-
-  def confirm
-    change_status(:confirm, "Visit confirmed.")
-  end
-
-  def cancel
-    change_status(:cancel, "Visit cancelled.")
-  end
-
-  def complete
-    change_status(:complete, "Visit marked as completed. The seeker can now review the property.")
   end
 
   private
@@ -51,14 +46,6 @@ class VisitsController < ApplicationController
   end
 
   def visit_params
-    params.expect(visit: [ :scheduled_at ])
-  end
-
-  def change_status(action, notice)
-    if @visit.public_send(action)
-      redirect_to @visit.application, notice: notice
-    else
-      redirect_to @visit.application, alert: @visit.errors.full_messages.to_sentence
-    end
+    params.expect(visit: [ :scheduled_at, :status ])
   end
 end

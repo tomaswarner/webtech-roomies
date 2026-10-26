@@ -1,5 +1,5 @@
 class ListingsController < ApplicationController
-  before_action :set_listing, only: [ :edit, :update, :destroy, :publish, :withdraw, :mark_as_rented ]
+  before_action :set_listing, only: [ :edit, :update, :destroy ]
 
   def index
     @neighborhoods = Neighborhood.by_name
@@ -36,9 +36,13 @@ class ListingsController < ApplicationController
   def edit
   end
 
+  # The edit form and the lifecycle buttons (publish, withdraw, mark as rented) both send their changes here.
   def update
     if @listing.update(listing_params)
-      redirect_to @listing, notice: "Listing updated."
+      notice = @listing.saved_change_to_status? ? "The listing is now #{@listing.status}." : "Listing updated."
+      redirect_to @listing, notice: notice
+    elsif listing_params.key?(:status)
+      redirect_to @listing, alert: @listing.errors.full_messages.to_sentence
     else
       flash.now[:alert] = "The listing could not be updated."
       render :edit, status: :unprocessable_content
@@ -47,23 +51,11 @@ class ListingsController < ApplicationController
 
   def destroy
     if @listing.destroy
-      redirect_to @listing.property, notice: "Listing deleted."
+      redirect_to @listing.property, status: :see_other, notice: "Listing deleted."
     else
-      redirect_to @listing, alert: "The listing can't be deleted: #{@listing.errors.full_messages.to_sentence}. " \
+      redirect_to @listing, status: :see_other, alert: "The listing can't be deleted: #{@listing.errors.full_messages.to_sentence}. " \
                                    "Withdraw it instead."
     end
-  end
-
-  def publish
-    change_status(:publish, "Listing published. It is now visible to everyone.")
-  end
-
-  def withdraw
-    change_status(:withdraw, "Listing withdrawn.")
-  end
-
-  def mark_as_rented
-    change_status(:mark_as_rented, "Listing marked as rented.")
   end
 
   private
@@ -72,17 +64,9 @@ class ListingsController < ApplicationController
     @listing = Listing.find(params[:id])
   end
 
-  def change_status(action, notice)
-    if @listing.public_send(action)
-      redirect_to @listing, notice: notice
-    else
-      redirect_to @listing, alert: @listing.errors.full_messages.to_sentence
-    end
-  end
-
   def listing_params
     params.expect(listing: [ :title, :monthly_rent, :deposit, :available_on, :minimum_stay_months, :furnished,
-                             :private_bathroom, :description, :house_rules, photos: [] ])
+                             :private_bathroom, :description, :house_rules, :status, photos: [] ])
   end
 
   def search_params

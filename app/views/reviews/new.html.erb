@@ -2,5 +2,5 @@
 <%= render "shared/page_header", title: "Review this property", subtitle: @property.to_s %>
 
 <div class="container" style="max-width: 720px">
-  <%= render "form", review: @review, property: @property %>
+  <%= render "form", review: @review, property: @property, visits: @visits %>
 </div>

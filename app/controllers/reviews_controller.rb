@@ -5,6 +5,7 @@ class ReviewsController < ApplicationController
 
   def new
     @review = @property.reviews.build(visit: reviewable_visits.find_by(id: params[:visit_id]))
+    @visits = reviewable_visits.completed
   end
 
   def create
@@ -14,6 +15,7 @@ class ReviewsController < ApplicationController
     if @review.save
       redirect_to @property, notice: "Thanks! Your review was published."
     else
+      @visits = reviewable_visits.completed
       flash.now[:alert] = "The review could not be published."
       render :new, status: :unprocessable_content
     end
@@ -33,7 +35,7 @@ class ReviewsController < ApplicationController
 
   def destroy
     @review.destroy
-    redirect_to @review.property, notice: "Review deleted."
+    redirect_to @review.property, status: :see_other, notice: "Review deleted."
   end
 
   private
@@ -52,8 +54,7 @@ class ReviewsController < ApplicationController
 
   # Only the current user's own visits to this property can be reviewed; the model checks they are completed.
   def reviewable_visits
-    @reviewable_visits ||= current_user.visits.where.missing(:review)
-                                       .joins(application: :listing).where(listings: { property_id: @property.id })
+    current_user.visits.where.missing(:review)
+                .joins(application: :listing).where(listings: { property_id: @property.id })
   end
-  helper_method :reviewable_visits
 end

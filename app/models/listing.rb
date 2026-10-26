@@ -42,6 +42,7 @@ class Listing < ApplicationRecord
   validate :available_on_not_in_the_past
   validate :starts_as_draft, on: :create
   validate :status_transition_allowed, on: :update
+  validate :reserved_only_with_an_accepted_application
   validate :photos_are_images_under_the_size_limit
 
   scope :visible, -> { where(status: [ :published, :reserved, :rented ]) }
@@ -85,18 +86,6 @@ class Listing < ApplicationRecord
     TRANSITIONS.fetch(status).include?(new_status.to_s)
   end
 
-  def publish
-    update(status: :published)
-  end
-
-  def withdraw
-    update(status: :withdrawn)
-  end
-
-  def mark_as_rented
-    update(status: :rented)
-  end
-
   def available_now?
     available_on <= Date.current
   end
@@ -120,10 +109,16 @@ class Listing < ApplicationRecord
   end
 
   def status_transition_allowed
-    return unless will_save_change_to_status?
+    return unless status_changed?
 
-    from, to = status_change_to_be_saved
-    errors.add(:status, "can't change from #{from} to #{to}") unless TRANSITIONS.fetch(from, []).include?(to)
+    errors.add(:status, "can't change from #{status_was} to #{status}") unless TRANSITIONS.fetch(status_was, []).include?(status)
+  end
+
+  # A listing is reserved by accepting an application (Application#accept), never directly.
+  def reserved_only_with_an_accepted_application
+    return unless reserved? && status_changed?
+
+    errors.add(:status, "can only become reserved by accepting an application") unless applications.accepted.exists?
   end
 
   def photos_are_images_under_the_size_limit

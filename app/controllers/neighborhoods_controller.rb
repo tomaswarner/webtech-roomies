@@ -41,9 +41,9 @@ class NeighborhoodsController < ApplicationController
 
   def destroy
     if @neighborhood.destroy
-      redirect_to neighborhoods_path, notice: "Neighborhood deleted."
+      redirect_to neighborhoods_path, status: :see_other, notice: "Neighborhood deleted."
     else
-      redirect_to @neighborhood, alert: "The neighborhood can't be deleted: #{@neighborhood.errors.full_messages.to_sentence}."
+      redirect_to @neighborhood, status: :see_other, alert: "The neighborhood can't be deleted: #{@neighborhood.errors.full_messages.to_sentence}."
     end
   end
 

@@ -378,7 +378,7 @@ review(lucas_visit, rating: 5, written: 6.months.ago + 5.days,
 apply(l_providencia_old, users[:sofia], sent: 6.months.ago + 1.day,
       message: "Hi, I'm Sofía. I'm interested in the room for next semester.")
 lucas_prov.accept || raise("could not accept lucas_prov")
-l_providencia_old.mark_as_rented || raise("could not rent")
+l_providencia_old.rented!
 
 # Las Condes walk-in closet room: rented.
 flo_lc = apply(l_las_condes_old, users[:florencia], sent: 4.months.ago, status: :shortlisted,
@@ -389,7 +389,7 @@ review(flo_visit, rating: 4, written: 4.months.ago + 4.days,
 apply(l_las_condes_old, users[:felipe], sent: 4.months.ago + 2.days,
       message: "Hi, I'm Felipe. Would love to live close to my work.")
 flo_lc.accept || raise("could not accept flo_lc")
-l_las_condes_old.mark_as_rented || raise("could not rent")
+l_las_condes_old.rented!
 
 # La Reina en-suite room: reserved.
 antonia_lr = apply(l_la_reina_suite, users[:antonia], sent: 40.days.ago, status: :shortlisted,

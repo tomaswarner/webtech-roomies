@@ -7,7 +7,7 @@
     <%= link_to new_property_listing_path(@property), class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New listing<% end %>
     <%= link_to "Edit property", edit_property_path(@property), class: "btn btn-outline-primary" %>
     <%= button_to "Delete property", @property, method: :delete, class: "btn btn-outline-danger",
-                  form: { data: { turbo_confirm: "Delete this property?" } } %>
+                  data: { turbo_confirm: "Delete this property?" } %>
   </div>
   <p class="text-muted">
     <%= pluralize(@property.bedrooms_count, "bedroom") %> · <%= pluralize(@property.bathrooms_count, "bathroom") %>

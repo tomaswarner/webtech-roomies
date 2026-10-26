@@ -28,46 +28,40 @@ class ApplicationsController < ApplicationController
     end
   end
 
-  def edit
-  end
-
+  # The host answers (shortlisted, rejected, accepted) and the seeker withdraws by changing the status.
   def update
-    if @application.editable? && @application.update(application_params)
-      redirect_to @application, notice: "Application updated."
-    else
-      @application.errors.add(:base, "Only pending applications can be edited") unless @application.editable?
-      flash.now[:alert] = "The application could not be updated."
-      render :edit, status: :unprocessable_content
-    end
-  end
+    @rejected_applications = []
+    status = params.expect(application: [ :status ])[:status]
 
-  def withdraw
-    if @application.withdraw_by(current_user)
-      flash_message = { notice: "Application withdrawn." }
-    else
-      flash_message = { alert: @application.errors.full_messages.to_sentence }
-    end
+    succeeded =
+      case status
+      when "accepted"
+        rejected = @application.accept
+        @rejected_applications = rejected || []
+        rejected
+      when "withdrawn"
+        @application.withdraw_by(current_user)
+      else
+        @application.update(status: status)
+      end
 
-    if turbo_frame_request?
-      flash_message.each { |type, text| flash.now[type] = text }
+    if succeeded
+      flash.now[:notice] = "The application from #{@application.seeker.name} is now #{@application.status}."
+    else
+      flash.now[:alert] = @application.errors.full_messages.to_sentence
+      @application.reload
+    end
+    @pending_count = current_user ? current_user.received_applications.pending.count : 0
+
+    # Withdrawing happens inside the listing page frame; the host's answers come from the inbox.
+    if status == "withdrawn"
       render partial: "applications/listing_box", locals: { listing: @application.listing, application: @application, show_flash: true }
     else
-      redirect_back fallback_location: @application, **flash_message
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to @application, notice: flash.now[:notice], alert: flash.now[:alert] }
+      end
     end
-  end
-
-  def shortlist
-    answer(@application.shortlist, "#{@application.seeker.name} was shortlisted.")
-  end
-
-  def reject
-    answer(@application.reject, "#{@application.seeker.name} was rejected.")
-  end
-
-  def accept
-    rejected = @application.accept
-    @rejected_applications = rejected || []
-    answer(rejected, "#{@application.seeker.name} was accepted and the listing is now reserved.")
   end
 
   private
@@ -78,21 +72,5 @@ class ApplicationsController < ApplicationController
 
   def application_params
     params.expect(application: [ :message, :move_in_date, :stay_duration_months ])
-  end
-
-  # The host answers from the inbox: a Turbo Stream updates the affected rows and the pending count.
-  def answer(succeeded, notice)
-    message = succeeded ? { notice: notice } : { alert: @application.errors.full_messages.to_sentence }
-    @application.reload unless succeeded
-    @rejected_applications ||= []
-    @pending_count = current_user ? current_user.received_applications.pending.count : 0
-
-    respond_to do |format|
-      format.turbo_stream do
-        message.each { |type, text| flash.now[type] = text }
-        render :answer
-      end
-      format.html { redirect_back fallback_location: @application, **message }
-    end
   end
 end

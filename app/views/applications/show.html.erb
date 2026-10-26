@@ -3,15 +3,6 @@
            subtitle: "For #{@listing.title}" %>
 
 <div class="container">
-  <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
-    <% if @application.editable? %>
-      <%= link_to "Edit application", edit_application_path(@application), class: "btn btn-outline-primary" %>
-    <% end %>
-    <% if @application.withdrawable? %>
-      <%= button_to "Withdraw", withdraw_application_path(@application), method: :patch, class: "btn btn-outline-danger",
-                    form: { data: { turbo_confirm: "Withdraw this application?" } } %>
-    <% end %>
-  </div>
   <div class="row g-4">
     <div class="col-lg-7">
       <h2 class="h4">Message</h2>
@@ -38,18 +29,17 @@
               <span class="d-flex flex-wrap align-items-center gap-1">
                 <%= status_badge(visit.status) %>
                 <% if visit.proposed? %>
-                  <%= button_to "Confirm", confirm_visit_path(visit), method: :patch, class: "btn btn-sm btn-outline-primary" %>
+                  <%= button_to "Confirm", visit, method: :patch, params: { visit: { status: "confirmed" } },
+                                class: "btn btn-sm btn-outline-primary" %>
                 <% end %>
                 <% if visit.open? %>
                   <%= link_to "Reschedule", edit_visit_path(visit), class: "btn btn-sm btn-outline-secondary" %>
-                  <%= button_to "Cancel", cancel_visit_path(visit), method: :patch, class: "btn btn-sm btn-outline-danger",
-                                form: { data: { turbo_confirm: "Cancel this visit?" } } %>
+                  <%= button_to "Cancel", visit, method: :patch, params: { visit: { status: "cancelled" } },
+                                class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Cancel this visit?" } %>
                 <% end %>
                 <% if visit.confirmed? %>
-                  <%= button_to "Mark as completed", complete_visit_path(visit), method: :patch, class: "btn btn-sm btn-success" %>
-                <% end %>
-                <% if visit.completed? && visit.review.nil? %>
-                  <%= link_to "Write a review", new_property_review_path(@listing.property, visit_id: visit.id), class: "btn btn-sm btn-outline-success" %>
+                  <%= button_to "Mark as completed", visit, method: :patch, params: { visit: { status: "completed" } },
+                                class: "btn btn-sm btn-success" %>
                 <% end %>
               </span>
             </li>

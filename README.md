@@ -63,26 +63,10 @@ webtech-roomies/
 
 ## Assignment 3 — CRUD, Photographs, Rich Text, and Hotwire
 
-- **Acting as a user**: there is no authentication yet. The select in the navigation bar ("Acting as") chooses the
-  user every action is performed as; "Visitor" means nobody.
-- **CRUD**: properties (with amenities from the catalog), listings (created inside a property), applications (sent
-  from the listing page, editable while pending, withdrawable), visits (proposed on a shortlisted application, then
-  confirmed, rescheduled, cancelled or completed), reviews (from the property page after a completed visit),
-  neighborhoods and amenities. Every action reports its result with a flash message.
-- **Photographs**: Active Storage, `has_many_attached :photos` on `Listing`. Only JPEG, PNG, WebP and GIF images
-  are accepted, and **each photo can be at most 5 MB**. Cards use a 600×400 `:card` variant and the listing page a
-  `:large` variant (at most 1200×900).
-- **Rich text**: Action Text for the listing `description` and `house_rules`.
-- **Business rules** (in the models): applications follow `pending → shortlisted → accepted/rejected/withdrawn`,
-  and `Application#accept` accepts the applicant, rejects every other open application and reserves the listing in
-  one transaction. Listings are created as drafts (visible only to their host) and follow
-  `draft → published → reserved → rented`, with `withdrawn` available until they are rented. Visits can only be
-  proposed on shortlisted applications and never in the past.
-- **Hotwire**: applying to (or withdrawing from) a listing replaces only the application block of the listing page
-  (Turbo Frame). In the host's inbox (`/applications`), shortlisting, rejecting or accepting updates the affected
-  rows, including the ones rejected automatically, and the pending count (Turbo Stream).
-- **Model changes**: the `listing_photos` table and the `listings.description` column were replaced by Active
-  Storage attachments and Action Text rich texts.
+- **Upload size limit**: listing photographs must be JPEG, PNG, WebP or GIF images of **at most 5 MB each**.
+- **Acting as a user**: there is no authentication yet; the "Acting as" select in the navigation bar chooses the user
+  every action is performed as.
+- **New setup steps**: install libvips (see Setup) and run `bin/rails db:migrate db:seed`.
 
 ## Course
 

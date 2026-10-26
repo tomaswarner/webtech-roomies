@@ -11,18 +11,18 @@
         </span>
         <%= link_to "Edit", edit_listing_path(@listing), class: "btn btn-sm btn-outline-primary" %>
         <% if @listing.can_become?(:published) %>
-          <%= button_to "Publish", publish_listing_path(@listing), method: :patch, class: "btn btn-sm btn-success" %>
+          <%= button_to "Publish", @listing, method: :patch, params: { listing: { status: "published" } }, class: "btn btn-sm btn-success" %>
         <% end %>
         <% if @listing.can_become?(:rented) %>
-          <%= button_to "Mark as rented", mark_as_rented_listing_path(@listing), method: :patch, class: "btn btn-sm btn-dark",
-                        form: { data: { turbo_confirm: "Has the new housemate moved in?" } } %>
+          <%= button_to "Mark as rented", @listing, method: :patch, params: { listing: { status: "rented" } },
+                        class: "btn btn-sm btn-dark", data: { turbo_confirm: "Has the new housemate moved in?" } %>
         <% end %>
         <% if @listing.can_become?(:withdrawn) %>
-          <%= button_to "Withdraw", withdraw_listing_path(@listing), method: :patch, class: "btn btn-sm btn-outline-danger",
-                        form: { data: { turbo_confirm: "Withdraw this listing? It will stop receiving applications." } } %>
+          <%= button_to "Withdraw", @listing, method: :patch, params: { listing: { status: "withdrawn" } },
+                        class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Withdraw this listing? It will stop receiving applications." } %>
         <% end %>
         <%= button_to "Delete", @listing, method: :delete, class: "btn btn-sm btn-danger",
-                      form: { data: { turbo_confirm: "Delete this listing permanently?" } } %>
+                      data: { turbo_confirm: "Delete this listing permanently?" } %>
       </div>
     </div>
   <% end %>
@@ -47,18 +47,6 @@
             </button>
           <% end %>
         </div>
-        <% if @listing.photos.size > 1 %>
-          <div class="row g-2 mb-4">
-            <% @listing.photos.each_with_index do |photo, index| %>
-              <div class="col-3 col-md-2">
-                <button type="button" class="btn p-0 border-0" data-bs-target="#listing-photos" data-bs-slide-to="<%= index %>"
-                        aria-label="Show photo <%= index + 1 %>">
-                  <%= image_tag photo.variant(:card), alt: "", class: "img-fluid rounded" %>
-                </button>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
       <% else %>
         <div class="rounded overflow-hidden mb-4"><%= render "shared/photo_placeholder" %></div>
       <% end %>

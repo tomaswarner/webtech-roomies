@@ -34,18 +34,6 @@ class Visit < ApplicationRecord
     proposed? || confirmed?
   end
 
-  def confirm
-    update(status: :confirmed)
-  end
-
-  def cancel
-    update(status: :cancelled)
-  end
-
-  def complete
-    update(status: :completed)
-  end
-
   def reschedule(new_time)
     update(scheduled_at: new_time, status: :proposed)
   end
@@ -60,10 +48,9 @@ class Visit < ApplicationRecord
   end
 
   def status_transition_allowed
-    return unless will_save_change_to_status?
+    return unless status_changed?
 
-    from, to = status_change_to_be_saved
-    errors.add(:status, "can't change from #{from} to #{to}") unless TRANSITIONS.fetch(from, []).include?(to)
+    errors.add(:status, "can't change from #{status_was} to #{status}") unless TRANSITIONS.fetch(status_was, []).include?(status)
   end
 
   def scheduled_after_application

@@ -42,9 +42,9 @@ class PropertiesController < ApplicationController
 
   def destroy
     if @property.destroy
-      redirect_to properties_path, notice: "Property deleted."
+      redirect_to properties_path, status: :see_other, notice: "Property deleted."
     else
-      redirect_to @property, alert: "The property can't be deleted: #{@property.errors.full_messages.to_sentence}."
+      redirect_to @property, status: :see_other, alert: "The property can't be deleted: #{@property.errors.full_messages.to_sentence}."
     end
   end
 

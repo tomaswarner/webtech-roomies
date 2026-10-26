@@ -16,6 +16,6 @@ class ApplicationController < ActionController::Base
   def require_current_user
     return if current_user
 
-    redirect_back fallback_location: root_path, alert: "Choose the user you are acting as in the navigation bar first."
+    redirect_to root_path, alert: "Choose the user you are acting as in the navigation bar first."
   end
 end

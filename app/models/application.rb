@@ -41,10 +41,6 @@ class Application < ApplicationRecord
     pending? || shortlisted?
   end
 
-  def editable?
-    pending?
-  end
-
   # Only the seeker who wrote the application can pull it back, and only while it is still open.
   def withdraw_by(user)
     if user.blank? || user.id != seeker_id
@@ -55,14 +51,6 @@ class Application < ApplicationRecord
     update(status: :withdrawn)
   end
 
-  def shortlist
-    update(status: :shortlisted)
-  end
-
-  def reject
-    update(status: :rejected)
-  end
-
   # Accepting an applicant is a single decision: this application becomes accepted, every other open
   # application on the listing is rejected and the listing moves to reserved. If any step fails the
   # transaction is rolled back and nothing changes. Returns the applications rejected along the way.
@@ -70,7 +58,6 @@ class Application < ApplicationRecord
     rejected = []
 
     transaction do
-      listing.lock!
       unless listing.published?
         errors.add(:base, "This listing is #{listing.status} and can no longer accept an applicant")
         raise ActiveRecord::Rollback
@@ -111,10 +98,9 @@ class Application < ApplicationRecord
   end
 
   def status_transition_allowed
-    return unless will_save_change_to_status?
+    return unless status_changed?
 
-    from, to = status_change_to_be_saved
-    errors.add(:status, "can't change from #{from} to #{to}") unless TRANSITIONS.fetch(from, []).include?(to)
+    errors.add(:status, "can't change from #{status_was} to #{status}") unless TRANSITIONS.fetch(status_was, []).include?(status)
   end
 
   def stay_covers_minimum_stay

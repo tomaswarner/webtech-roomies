@@ -4,6 +4,6 @@ class ActingUsersController < ApplicationController
     session[:user_id] = user&.id
 
     notice = user ? "You are now acting as #{user.name}." : "You are now browsing as a visitor."
-    redirect_back fallback_location: root_path, notice: notice
+    redirect_to root_path, notice: notice
   end
 end
