@@ -6,41 +6,15 @@
 # applications before their visits, and visits before their reviews.
 
 puts "Cleaning up..."
-[ Report, SavedListing, Review, Visit, Application, ListingPhoto, Listing,
-  PropertyAmenity, Property, Amenity, Neighborhood, User ].each(&:delete_all)
+[ Report, SavedListing, Review, Visit, Application, Listing,
+  PropertyAmenity, Property, Amenity, Neighborhood, User ].each(&:destroy_all)
 
-def photo_url(id)
-  "https://images.unsplash.com/photo-#{id}?w=1200&q=75&auto=format&fit=crop"
-end
-
-PHOTOS = {
-  bedroom_cozy: "1505693416388-ac5ce068fe85",
-  bedroom_orange: "1540518614846-7eded433c457",
-  bedroom_dark: "1616594039964-ae9021a400a0",
-  bedroom_hotel: "1631049307264-da0ec9d70304",
-  bedroom_white: "1598928506311-c55ded91a20c",
-  bedroom_wood: "1617325247661-675ab4b64ae2",
-  bedroom_plants: "1571508601891-ca5e7a713859",
-  bedroom_grey: "1560185893-a55cbc8c57e8",
-  living_bright: "1522708323590-d24dbb6b0267",
-  living_plants: "1502672260266-1c1ef2d93688",
-  living_open: "1560448204-e02f11c3d0e2",
-  living_blue: "1493809842364-78817add7ffb",
-  living_minimal: "1513694203232-719a280e022f",
-  living_yellow: "1586023492125-27b2c045efd7",
-  living_classic: "1595526114035-0d45ed16cfbf",
-  dining: "1560185007-cde436f6a4d0",
-  living_view: "1564078516393-cf04bd966897",
-  kitchen_white: "1484154218962-a197022b5858",
-  kitchen_marble: "1556911220-bff31c812dba",
-  bathroom_modern: "1552321554-5fefe8c9ef14",
-  bathroom_small: "1584622650111-993a426fbf0a",
-  house_garden: "1600585154340-be6161a56a0c"
-}.freeze
+# Photographs live in db/seeds/photos and are attached through Active Storage.
+PHOTOS_DIR = Rails.root.join("db/seeds/photos")
 
 def add_photos(listing, *keys)
-  keys.each_with_index do |(key, caption), index|
-    listing.photos.create!(image_url: photo_url(PHOTOS.fetch(key)), caption: caption, position: index)
+  keys.each do |key, _caption|
+    listing.photos.attach(io: PHOTOS_DIR.join("#{key}.jpg").open, filename: "#{key}.jpg", content_type: "image/jpeg")
   end
 end
 
@@ -179,12 +153,14 @@ macul_house = create_property(
 )
 
 # --- Listings ----------------------------------------------------------------------------------------
-# Every listing starts out published (or draft), receives its applications, and only then moves along its
+# Every listing is created as a draft and published right away (unless it stays a draft), receives its applications, and only then moves along its
 # lifecycle, exactly as it would in the application.
 
 puts "Creating listings..."
 def create_listing(property:, created:, available:, status: :published, **attributes)
-  Listing.create!(property: property, status: status, created_at: created, available_on: available, **attributes)
+  listing = Listing.create!(property: property, created_at: created, available_on: available, **attributes)
+  listing.update!(status: :published) if status.to_s == "published"
+  listing
 end
 
 l_providencia_suite = create_listing(
@@ -192,8 +168,9 @@ l_providencia_suite = create_listing(
   title: "Bright room with private bathroom near Pedro de Valdivia",
   monthly_rent: 430_000, deposit: 430_000, minimum_stay_months: 6, furnished: true, private_bathroom: true,
   description: "The largest bedroom in the apartment, with a double bed, a desk and its own bathroom. " \
-               "You would share the flat with me (Camila, 29, architect) and Pedro, a PhD student. " \
-               "House rules: quiet hours from 23:00, no smoking indoors, we split cleaning every week."
+               "You would share the flat with me (Camila, 29, architect) and Pedro, a PhD student.",
+  house_rules: "<ul><li><strong>Quiet hours</strong> from 23:00 to 8:00</li><li>No smoking indoors</li>" \
+               "<li>We split cleaning every week</li></ul>"
 )
 add_photos(l_providencia_suite, [ :bedroom_hotel, "Bedroom" ], [ :bathroom_modern, "Private bathroom" ],
            [ :living_bright, "Living room" ], [ :kitchen_white, "Kitchen" ])
@@ -221,7 +198,9 @@ l_nunoa_garden = create_listing(
   monthly_rent: 320_000, deposit: 320_000, minimum_stay_months: 3, furnished: false,
   description: "Spacious unfurnished room on the ground floor with a big window to the backyard. " \
                "We are three housemates (two engineers and a musician) and a very friendly cat. " \
-               "We cook together on Sundays. Pets are welcome."
+               "We cook together on Sundays. Pets are welcome.",
+  house_rules: "<p><em>Pets are welcome</em>, as long as they get along with our cat.</p>" \
+               "<ul><li>Guests are fine, just let the house know</li><li>Shared groceries are split every month</li></ul>"
 )
 add_photos(l_nunoa_garden, [ :bedroom_plants, "Bedroom" ], [ :living_plants, "Living room" ],
            [ :dining, "Dining area" ], [ :house_garden, "Backyard" ])
@@ -281,7 +260,9 @@ l_la_reina = create_listing(
   title: "Quiet room in a family house with garden",
   monthly_rent: 340_000, deposit: 340_000, minimum_stay_months: 6, furnished: true,
   description: "Calm, sunny room in a house with a big garden. I live here with my partner and our two dogs. " \
-               "Perfect for someone who works from home and loves animals."
+               "Perfect for someone who works from home and loves animals.",
+  house_rules: "<ol><li>No parties</li><li><strong>The dogs stay out of the bedrooms</strong></li>" \
+               "<li>Garden and terrace are shared by everyone</li></ol>"
 )
 add_photos(l_la_reina, [ :bedroom_cozy, "Bedroom" ], [ :living_classic, "Living room" ],
            [ :house_garden, "Garden" ], [ :bathroom_small, "Bathroom" ])
@@ -386,9 +367,7 @@ apply(l_providencia_small, users[:sebastian], sent: 57.days.ago,
       message: "Hi, I'm Sebastián, a business student looking for a room for the semester.")
 apply(l_providencia_small, users[:florencia], sent: 59.days.ago, status: :withdrawn,
       message: "Hi Camila! I'm Florencia, I'm moving from Concepción for work.")
-nicolas_prov.accepted!
-l_providencia_small.applications.where.not(id: nicolas_prov).awaiting_answer.update_all(status: "rejected")
-l_providencia_small.reserved!
+nicolas_prov.accept || raise("could not accept nicolas_prov")
 
 # Providencia balcony room: rented months ago.
 lucas_prov = apply(l_providencia_old, users[:lucas], sent: 6.months.ago, status: :shortlisted,
@@ -398,9 +377,8 @@ review(lucas_visit, rating: 5, written: 6.months.ago + 5.days,
        comment: "Camila is a fantastic host and the balcony view is even better in person.")
 apply(l_providencia_old, users[:sofia], sent: 6.months.ago + 1.day,
       message: "Hi, I'm Sofía. I'm interested in the room for next semester.")
-lucas_prov.accepted!
-l_providencia_old.applications.where.not(id: lucas_prov).awaiting_answer.update_all(status: "rejected")
-l_providencia_old.rented!
+lucas_prov.accept || raise("could not accept lucas_prov")
+l_providencia_old.mark_as_rented || raise("could not rent")
 
 # Las Condes walk-in closet room: rented.
 flo_lc = apply(l_las_condes_old, users[:florencia], sent: 4.months.ago, status: :shortlisted,
@@ -410,9 +388,8 @@ review(flo_visit, rating: 4, written: 4.months.ago + 4.days,
        comment: "Very modern building and the gym is great. Parking is tight but it works.")
 apply(l_las_condes_old, users[:felipe], sent: 4.months.ago + 2.days,
       message: "Hi, I'm Felipe. Would love to live close to my work.")
-flo_lc.accepted!
-l_las_condes_old.applications.where.not(id: flo_lc).awaiting_answer.update_all(status: "rejected")
-l_las_condes_old.rented!
+flo_lc.accept || raise("could not accept flo_lc")
+l_las_condes_old.mark_as_rented || raise("could not rent")
 
 # La Reina en-suite room: reserved.
 antonia_lr = apply(l_la_reina_suite, users[:antonia], sent: 40.days.ago, status: :shortlisted,
@@ -423,9 +400,7 @@ review(antonia_visit, rating: 5, written: 35.days.ago,
 seba_lr = apply(l_la_reina_suite, users[:sebastian], sent: 38.days.ago, status: :shortlisted,
                 message: "Hello, I'm Sebastián. I'm looking for a quieter neighborhood to study.")
 visit(seba_lr, at: 34.days.ago.change(hour: 18), status: :completed)
-antonia_lr.accepted!
-l_la_reina_suite.applications.where.not(id: antonia_lr).awaiting_answer.update_all(status: "rejected")
-l_la_reina_suite.reserved!
+antonia_lr.accept || raise("could not accept antonia_lr")
 
 # Providencia suite: a host acting as a seeker, plus a rescheduled visit.
 apply(l_providencia_suite, users[:diego], sent: 2.days.ago,
@@ -491,7 +466,7 @@ Report.create!(listing: l_vitacura, reporter: users[:felipe], reason: "other", s
                details: "The rent seems very high for a shared room, maybe it's a typo?")
 
 puts "Done!"
-[ User, Neighborhood, Amenity, Property, PropertyAmenity, Listing, ListingPhoto,
+[ User, Neighborhood, Amenity, Property, PropertyAmenity, Listing, ActiveStorage::Attachment,
   Application, Visit, Review, SavedListing, Report ].each do |model|
   puts "  #{model.name.pluralize.ljust(18)} #{model.count}"
 end
