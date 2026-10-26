@@ -1,0 +1,6 @@
+<% content_for :title, "New listing" %>
+<%= render "shared/page_header", title: "New listing", subtitle: "A room inside #{@property}" %>
+
+<div class="container" style="max-width: 860px">
+  <%= render "form", listing: @listing %>
+</div>

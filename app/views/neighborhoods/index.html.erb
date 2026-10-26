@@ -2,6 +2,9 @@
 <%= render "shared/page_header", title: "Neighborhoods", subtitle: "Browse rooms by area" %>
 
 <div class="container">
+  <div class="d-flex justify-content-end mb-3">
+    <%= link_to new_neighborhood_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New neighborhood<% end %>
+  </div>
   <div class="row g-4">
     <% @neighborhoods.each do |neighborhood| %>
       <% published = @published_counts.fetch(neighborhood.id, 0) %>

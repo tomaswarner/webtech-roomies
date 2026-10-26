@@ -1,0 +1,6 @@
+<% content_for :title, "Edit #{@neighborhood.name}" %>
+<%= render "shared/page_header", title: "Edit neighborhood" %>
+
+<div class="container" style="max-width: 640px">
+  <%= render "form", neighborhood: @neighborhood %>
+</div>

@@ -1,0 +1,7 @@
+<% content_for :title, "Propose a visit" %>
+<%= render "shared/page_header", title: "Propose a visit",
+           subtitle: "#{@application.seeker.name} · #{@application.listing.title}" %>
+
+<div class="container" style="max-width: 640px">
+  <%= render "form", visit: @visit %>
+</div>

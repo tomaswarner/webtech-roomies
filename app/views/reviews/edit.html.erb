@@ -1,0 +1,6 @@
+<% content_for :title, "Edit review" %>
+<%= render "shared/page_header", title: "Edit your review", subtitle: @review.property.to_s %>
+
+<div class="container" style="max-width: 720px">
+  <%= render "form", review: @review, property: @review.property %>
+</div>

@@ -1,0 +1,6 @@
+<%= turbo_stream.replace dom_id(@application), partial: "applications/inbox_row", locals: { application: @application } %>
+<% @rejected_applications.each do |rejected| %>
+  <%= turbo_stream.replace dom_id(rejected), partial: "applications/inbox_row", locals: { application: rejected } %>
+<% end %>
+<%= turbo_stream.update "pending_count", @pending_count %>
+<%= turbo_stream.update "flash", partial: "shared/flash" %>

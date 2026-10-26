@@ -1,0 +1,6 @@
+<% content_for :title, "Edit #{@property.address}" %>
+<%= render "shared/page_header", title: "Edit property", subtitle: @property.address %>
+
+<div class="container" style="max-width: 820px">
+  <%= render "form", property: @property %>
+</div>

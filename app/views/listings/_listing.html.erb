@@ -1,7 +1,7 @@
 <div class="card h-100 shadow-sm listing-card">
   <div class="position-relative">
     <% if (photo = listing.cover_photo) %>
-      <%= image_tag photo.image_url, alt: photo.caption.presence || listing.title, class: "card-img-top listing-photo", loading: "lazy" %>
+      <%= image_tag photo.variant(:card), alt: listing.title, class: "card-img-top listing-photo", loading: "lazy" %>
     <% else %>
       <%= render "shared/photo_placeholder" %>
     <% end %>

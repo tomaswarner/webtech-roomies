@@ -1,31 +1,54 @@
 <% content_for :title, "Applications" %>
-<%= render "shared/page_header", title: "Applications", subtitle: "Requests from seekers to hosts" %>
+<%= render "shared/page_header", title: "Applications",
+           subtitle: "Applications received on #{current_user.first_name}'s listings and the ones #{current_user.first_name} sent" %>
 
 <div class="container">
-  <% if @applications.any? %>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr><th>Seeker</th><th>Room</th><th>Move in</th><th>Stay</th><th>Status</th><th>Sent</th></tr>
-        </thead>
-        <tbody>
-          <% @applications.each do |application| %>
-            <tr>
-              <td><%= link_to application.seeker.name, application %></td>
-              <td>
-                <%= application.listing.title %><br>
-                <span class="small text-muted"><%= application.listing.property.neighborhood.name %></span>
-              </td>
-              <td><%= l(application.move_in_date, format: :long) %></td>
-              <td><%= stay_text(application.stay_duration_months) %></td>
-              <td><%= status_badge(application.status) %></td>
-              <td class="text-muted small"><%= time_ago_in_words(application.created_at) %> ago</td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  <% else %>
-    <%= render "shared/empty_state", message: "There are no applications yet.", icon: "envelope" %>
-  <% end %>
+  <section class="mb-5">
+    <h2 class="h4 mb-3">
+      Inbox <span class="badge text-bg-secondary align-middle"><span id="pending_count"><%= @pending_count %></span> pending</span>
+    </h2>
+    <% if @received_applications.any? %>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr><th>Seeker</th><th>Room</th><th>Move in</th><th>Stay</th><th>Status</th><th class="text-end">Answer</th></tr>
+          </thead>
+          <tbody>
+            <%= render partial: "applications/inbox_row", collection: @received_applications, as: :application %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state", message: "Nobody has applied to your listings yet.", icon: "inbox" %>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="h4 mb-3">Sent</h2>
+    <% if @sent_applications.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr><th>Room</th><th>Move in</th><th>Stay</th><th>Status</th><th>Sent</th></tr>
+          </thead>
+          <tbody>
+            <% @sent_applications.each do |application| %>
+              <tr>
+                <td>
+                  <%= link_to application.listing.title, application %><br>
+                  <span class="small text-muted"><%= application.listing.property.neighborhood.name %></span>
+                </td>
+                <td><%= l(application.move_in_date, format: :long) %></td>
+                <td><%= stay_text(application.stay_duration_months) %></td>
+                <td><%= status_badge(application.status) %></td>
+                <td class="text-muted small"><%= time_ago_in_words(application.created_at) %> ago</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state", message: "You have not applied to any room yet.", icon: "envelope" %>
+    <% end %>
+  </section>
 </div>

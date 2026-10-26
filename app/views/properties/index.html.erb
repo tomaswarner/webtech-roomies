@@ -2,6 +2,9 @@
 <%= render "shared/page_header", title: "Properties", subtitle: "Every shared home on Roomies" %>
 
 <div class="container">
+  <div class="d-flex justify-content-end mb-3">
+    <%= link_to new_property_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New property<% end %>
+  </div>
   <% if @properties.any? %>
     <div class="row g-4">
       <% @properties.each do |property| %>

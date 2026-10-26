@@ -1,0 +1,17 @@
+<%= form_with model: visit.persisted? ? visit : [ visit.application, visit ], class: "card card-body shadow-sm" do |f| %>
+  <%= render "shared/base_errors", record: visit %>
+  <% visit.errors.full_messages_for(:application).each do |message| %>
+    <div class="alert alert-danger py-2" role="alert"><%= message %></div>
+  <% end %>
+  <div class="mb-3">
+    <%= f.label :scheduled_at, "Date and time", class: "form-label" %>
+    <%= f.datetime_field :scheduled_at, required: true, min: Time.current.strftime("%Y-%m-%dT%H:%M"),
+                         class: field_class(f, :scheduled_at) %>
+    <%= field_errors(f, :scheduled_at) %>
+    <%= field_errors(f, :status) %>
+  </div>
+  <div class="d-flex gap-2">
+    <%= f.submit visit.persisted? ? "Reschedule visit" : "Propose visit", class: "btn btn-primary" %>
+    <%= link_to "Cancel", visit.application, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

@@ -3,27 +3,84 @@
            subtitle: "#{@property.address}, #{@property.neighborhood.name}" %>
 
 <div class="container">
+  <% if @listing.hosted_by?(current_user) %>
+    <div class="card card-body bg-light mb-4">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="me-auto">This listing is <%= status_badge(@listing.status) %>
+          <% if @listing.draft? %><span class="small text-muted">· only you can see it until you publish it</span><% end %>
+        </span>
+        <%= link_to "Edit", edit_listing_path(@listing), class: "btn btn-sm btn-outline-primary" %>
+        <% if @listing.can_become?(:published) %>
+          <%= button_to "Publish", publish_listing_path(@listing), method: :patch, class: "btn btn-sm btn-success" %>
+        <% end %>
+        <% if @listing.can_become?(:rented) %>
+          <%= button_to "Mark as rented", mark_as_rented_listing_path(@listing), method: :patch, class: "btn btn-sm btn-dark",
+                        form: { data: { turbo_confirm: "Has the new housemate moved in?" } } %>
+        <% end %>
+        <% if @listing.can_become?(:withdrawn) %>
+          <%= button_to "Withdraw", withdraw_listing_path(@listing), method: :patch, class: "btn btn-sm btn-outline-danger",
+                        form: { data: { turbo_confirm: "Withdraw this listing? It will stop receiving applications." } } %>
+        <% end %>
+        <%= button_to "Delete", @listing, method: :delete, class: "btn btn-sm btn-danger",
+                      form: { data: { turbo_confirm: "Delete this listing permanently?" } } %>
+      </div>
+    </div>
+  <% end %>
+
   <div class="row g-4">
     <div class="col-lg-8">
-      <% if @listing.photos.any? %>
-        <div class="row g-2 mb-4">
-          <% @listing.photos.each do |photo| %>
-            <div class="col-md-6">
-              <%= image_tag photo.image_url, alt: photo.caption.presence || @listing.title, class: "img-fluid rounded listing-photo w-100" %>
-            </div>
+      <% if @listing.photos.attached? %>
+        <div id="listing-photos" class="carousel slide mb-4 rounded overflow-hidden" data-bs-ride="false">
+          <div class="carousel-inner">
+            <% @listing.photos.each_with_index do |photo, index| %>
+              <div class="carousel-item <%= "active" if index.zero? %>">
+                <%= image_tag photo.variant(:large), alt: "#{@listing.title}, photo #{index + 1}", class: "d-block w-100 listing-photo-large" %>
+              </div>
+            <% end %>
+          </div>
+          <% if @listing.photos.size > 1 %>
+            <button class="carousel-control-prev" type="button" data-bs-target="#listing-photos" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#listing-photos" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span>
+            </button>
           <% end %>
         </div>
+        <% if @listing.photos.size > 1 %>
+          <div class="row g-2 mb-4">
+            <% @listing.photos.each_with_index do |photo, index| %>
+              <div class="col-3 col-md-2">
+                <button type="button" class="btn p-0 border-0" data-bs-target="#listing-photos" data-bs-slide-to="<%= index %>"
+                        aria-label="Show photo <%= index + 1 %>">
+                  <%= image_tag photo.variant(:card), alt: "", class: "img-fluid rounded" %>
+                </button>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       <% else %>
         <div class="rounded overflow-hidden mb-4"><%= render "shared/photo_placeholder" %></div>
       <% end %>
 
       <h2 class="h4">About this room</h2>
-      <p><%= @listing.description.presence || "The host has not added a description yet." %></p>
+      <% if @listing.description.present? %>
+        <div class="mb-3"><%= @listing.description %></div>
+      <% else %>
+        <p>The host has not added a description yet.</p>
+      <% end %>
       <ul class="list-inline">
         <% room_features(@listing).each do |feature| %>
           <li class="list-inline-item"><span class="badge text-bg-light border"><%= feature %></span></li>
         <% end %>
       </ul>
+
+      <h2 class="h4 mt-4">House rules</h2>
+      <% if @listing.house_rules.present? %>
+        <div class="mb-3"><%= @listing.house_rules %></div>
+      <% else %>
+        <p class="text-muted">The host has not written house rules yet.</p>
+      <% end %>
 
       <h2 class="h4 mt-4">The property</h2>
       <p class="mb-1"><%= link_to @property.to_s, @property %></p>
@@ -58,6 +115,8 @@
           </dl>
         </div>
       </div>
+
+      <%= render "applications/listing_box", listing: @listing, application: @application %>
     </aside>
   </div>
 </div>

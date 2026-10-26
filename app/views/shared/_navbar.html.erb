@@ -9,9 +9,20 @@
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><%= nav_link_to "Search", listings_path %></li>
         <li class="nav-item"><%= nav_link_to "Neighborhoods", neighborhoods_path %></li>
+        <li class="nav-item"><%= nav_link_to "Amenities", amenities_path %></li>
         <li class="nav-item"><%= nav_link_to "Properties", properties_path %></li>
         <li class="nav-item"><%= nav_link_to "Applications", applications_path %></li>
       </ul>
+      <%= form_with url: acting_user_path, method: :patch, class: "d-flex align-items-center ms-lg-3 mt-2 mt-lg-0",
+                    data: { controller: "auto-submit", turbo: false } do |f| %>
+        <%= f.label :user_id, "Acting as", class: "text-white-50 small me-2 text-nowrap" %>
+        <%= f.select :user_id,
+                     options_for_select(User.by_name.map { |user| [ user.moderator? ? "#{user.name} (moderator)" : user.name, user.id ] },
+                                        current_user&.id),
+                     { include_blank: "Visitor" },
+                     class: "form-select form-select-sm", data: { action: "change->auto-submit#submit" } %>
+        <noscript><%= f.submit "Switch", class: "btn btn-sm btn-light ms-2" %></noscript>
+      <% end %>
     </div>
   </div>
 </nav>

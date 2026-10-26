@@ -1,0 +1,27 @@
+<tr id="<%= dom_id(application) %>">
+  <td><%= link_to application.seeker.name, application, data: { turbo_frame: "_top" } %></td>
+  <td>
+    <%= link_to application.listing.title, application.listing %><br>
+    <span class="small text-muted"><%= application.listing.property.neighborhood.name %></span>
+  </td>
+  <td><%= l(application.move_in_date, format: :long) %></td>
+  <td><%= stay_text(application.stay_duration_months) %></td>
+  <td><%= status_badge(application.status) %></td>
+  <td class="text-end">
+    <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+      <% if application.pending? %>
+        <%= button_to "Shortlist", shortlist_application_path(application), method: :patch, class: "btn btn-sm btn-outline-info" %>
+      <% end %>
+      <% if application.shortlisted? %>
+        <%= link_to "Propose visit", new_application_visit_path(application), class: "btn btn-sm btn-outline-secondary" %>
+      <% end %>
+      <% if application.withdrawable? && application.listing.published? %>
+        <%= button_to "Accept", accept_application_path(application), method: :patch, class: "btn btn-sm btn-success",
+                      form: { data: { turbo_confirm: "Accept #{application.seeker.name}? Every other open application on this listing will be rejected." } } %>
+      <% end %>
+      <% if application.withdrawable? %>
+        <%= button_to "Reject", reject_application_path(application), method: :patch, class: "btn btn-sm btn-outline-danger" %>
+      <% end %>
+    </div>
+  </td>
+</tr>

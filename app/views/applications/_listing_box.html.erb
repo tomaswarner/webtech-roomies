@@ -1,0 +1,62 @@
+<%# The application block of the listing page. Applying or withdrawing replaces only this frame. %>
+<%= turbo_frame_tag dom_id(listing, :application) do %>
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h2 class="h5">Apply for this room</h2>
+      <% if local_assigns[:show_flash] %>
+        <% flash.each do |type, message| %>
+          <div class="alert alert-<%= type.to_s == "alert" ? "danger" : "success" %> py-2" role="alert"><%= message %></div>
+        <% end %>
+      <% end %>
+
+      <% if current_user.blank? %>
+        <p class="text-muted mb-0">Choose the user you are acting as in the navigation bar to apply.</p>
+      <% elsif listing.hosted_by?(current_user) %>
+        <p class="text-muted mb-2">You host this listing.</p>
+        <%= link_to "Go to your application inbox", applications_path, class: "btn btn-outline-primary btn-sm", data: { turbo_frame: "_top" } %>
+      <% elsif application.persisted? %>
+        <p class="mb-2">Your application: <%= status_badge(application.status) %></p>
+        <p class="small text-muted mb-3">
+          Sent <%= time_ago_in_words(application.created_at) %> ago · move in <%= l(application.move_in_date, format: :long) %> ·
+          <%= stay_text(application.stay_duration_months) %>
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <%= link_to "View application", application, class: "btn btn-outline-primary btn-sm", data: { turbo_frame: "_top" } %>
+          <% if application.withdrawable? %>
+            <%= button_to "Withdraw", withdraw_application_path(application), method: :patch, class: "btn btn-outline-danger btn-sm",
+                          form: { data: { turbo_confirm: "Withdraw your application?" } } %>
+          <% end %>
+        </div>
+      <% elsif !listing.open_for_applications? %>
+        <p class="text-muted mb-0">This listing is <%= listing.status %> and is not accepting applications.</p>
+      <% else %>
+        <%= form_with model: [ listing, application ] do |f| %>
+          <%= render "shared/base_errors", record: application %>
+          <% %i[listing seeker seeker_id].flat_map { |attribute| application.errors.full_messages_for(attribute) }.each do |message| %>
+            <div class="alert alert-danger py-2" role="alert"><%= message %></div>
+          <% end %>
+          <div class="mb-3">
+            <%= f.label :message, "Introduce yourself", class: "form-label" %>
+            <%= f.text_area :message, rows: 4, required: true,
+                            placeholder: "Who you are, what you do, what you are looking for in a home...",
+                            class: field_class(f, :message) %>
+            <%= field_errors(f, :message) %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :move_in_date, "Move-in date", class: "form-label" %>
+            <%= f.date_field :move_in_date, required: true, min: [ listing.available_on, Date.current ].max,
+                             class: field_class(f, :move_in_date) %>
+            <%= field_errors(f, :move_in_date) %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :stay_duration_months, "Intended stay (months)", class: "form-label" %>
+            <%= f.number_field :stay_duration_months, required: true, min: listing.minimum_stay_months, step: 1,
+                               placeholder: listing.minimum_stay_months, class: field_class(f, :stay_duration_months) %>
+            <%= field_errors(f, :stay_duration_months) %>
+          </div>
+          <%= f.submit "Send application", class: "btn btn-primary w-100" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

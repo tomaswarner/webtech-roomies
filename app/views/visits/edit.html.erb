@@ -1,0 +1,7 @@
+<% content_for :title, "Reschedule visit" %>
+<%= render "shared/page_header", title: "Reschedule the visit",
+           subtitle: "#{@visit.application.seeker.name} · #{@visit.application.listing.title}" %>
+
+<div class="container" style="max-width: 640px">
+  <%= render "form", visit: @visit %>
+</div>

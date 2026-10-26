@@ -1,0 +1,9 @@
+<% if record.errors[:base].any? %>
+  <div class="alert alert-danger" role="alert">
+    <ul class="mb-0">
+      <% record.errors[:base].each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

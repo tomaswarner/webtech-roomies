@@ -1,0 +1,83 @@
+<%= form_with model: listing.persisted? ? listing : [ listing.property, listing ], class: "card card-body shadow-sm" do |f| %>
+  <%= render "shared/base_errors", record: listing %>
+  <div class="mb-3">
+    <%= f.label :title, class: "form-label" %>
+    <%= f.text_field :title, required: true, maxlength: 120, placeholder: "Bright room with private bathroom near the metro",
+                     class: field_class(f, :title) %>
+    <%= field_errors(f, :title) %>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <%= f.label :monthly_rent, "Monthly rent (CLP)", class: "form-label" %>
+      <%= f.number_field :monthly_rent, required: true, min: 1, step: 1, placeholder: "350000", class: field_class(f, :monthly_rent) %>
+      <%= field_errors(f, :monthly_rent) %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :deposit, "Deposit (CLP)", class: "form-label" %>
+      <%= f.number_field :deposit, required: true, min: 0, step: 1, placeholder: "350000", class: field_class(f, :deposit) %>
+      <%= field_errors(f, :deposit) %>
+    </div>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <%= f.label :available_on, "Available from", class: "form-label" %>
+      <%= f.date_field :available_on, required: true, min: (listing.created_at || Time.current).to_date,
+                       class: field_class(f, :available_on) %>
+      <%= field_errors(f, :available_on) %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :minimum_stay_months, "Minimum stay (months)", class: "form-label" %>
+      <%= f.number_field :minimum_stay_months, required: true, min: 1, step: 1, placeholder: "6",
+                         class: field_class(f, :minimum_stay_months) %>
+      <%= field_errors(f, :minimum_stay_months) %>
+    </div>
+  </div>
+  <div class="mb-3 d-flex flex-wrap gap-4">
+    <div class="form-check form-switch">
+      <%= f.check_box :furnished, class: "form-check-input", role: "switch" %>
+      <%= f.label :furnished, class: "form-check-label" %>
+    </div>
+    <div class="form-check form-switch">
+      <%= f.check_box :private_bathroom, class: "form-check-input", role: "switch" %>
+      <%= f.label :private_bathroom, class: "form-check-label" %>
+    </div>
+  </div>
+  <div class="mb-3">
+    <%= f.label :description, class: "form-label" %>
+    <%= f.rich_textarea :description, placeholder: "Describe the room and the people already living there",
+                        class: field_class(f, :description) %>
+    <%= field_errors(f, :description) %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :house_rules, class: "form-label" %>
+    <%= f.rich_textarea :house_rules, placeholder: "Quiet hours, guests, pets, cleaning...", class: field_class(f, :house_rules) %>
+    <%= field_errors(f, :house_rules) %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :photos, "Photographs", class: "form-label" %>
+    <% if listing.photos.attached? %>
+      <p class="small text-muted mb-2">Uncheck a photograph to remove it.</p>
+      <div class="row g-2 mb-2">
+        <% listing.photos.each do |photo| %>
+          <% next unless photo.persisted? %>
+          <div class="col-6 col-md-3">
+            <label class="d-block">
+              <%= image_tag photo.variant(:card), alt: "", class: "img-fluid rounded" %>
+              <span class="form-check mt-1">
+                <%= check_box_tag "listing[photos][]", photo.signed_id, true, id: "keep_photo_#{photo.id}", class: "form-check-input" %>
+                <span class="form-check-label small">Keep</span>
+              </span>
+            </label>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <%= f.file_field :photos, multiple: true, accept: Listing::PHOTO_CONTENT_TYPES.join(","), class: field_class(f, :photos) %>
+    <div class="form-text">JPEG, PNG, WebP or GIF, up to <%= Listing::MAX_PHOTO_SIZE / 1.megabyte %> MB each. You can select several at once.</div>
+    <%= field_errors(f, :photos) %>
+  </div>
+  <div class="d-flex gap-2">
+    <%= f.submit listing.new_record? ? "Create draft listing" : "Update listing", class: "btn btn-primary" %>
+    <%= link_to "Cancel", listing.persisted? ? listing : listing.property, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

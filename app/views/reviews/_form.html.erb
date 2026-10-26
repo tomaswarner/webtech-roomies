@@ -1,0 +1,29 @@
+<%= form_with model: review.persisted? ? review : [ property, review ], class: "card card-body shadow-sm" do |f| %>
+  <%= render "shared/base_errors", record: review %>
+  <% if review.new_record? %>
+    <div class="mb-3">
+      <%= f.label :visit_id, "Your visit", class: "form-label" %>
+      <%= f.collection_select :visit_id, reviewable_visits.completed.includes(application: :listing), :id,
+                              ->(visit) { "#{visit.application.listing.title} — #{l(visit.scheduled_at, format: :long)}" },
+                              { prompt: "Choose the visit you are reviewing" }, required: true,
+                              class: field_class(f, :visit_id, "form-select") %>
+      <%= field_errors(f, :visit_id) %>
+    </div>
+  <% end %>
+  <div class="mb-3">
+    <%= f.label :rating, class: "form-label" %>
+    <%= f.select :rating, (1..5).to_a.reverse.map { |n| [ "#{n} — #{%w[Poor Fair Good Very\ good Excellent][n - 1]}", n ] },
+                 { prompt: "How would you rate it?" }, required: true, class: field_class(f, :rating, "form-select") %>
+    <%= field_errors(f, :rating) %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :comment, class: "form-label" %>
+    <%= f.text_area :comment, rows: 4, required: true, minlength: 10,
+                    placeholder: "Did the place match what the listing promised?", class: field_class(f, :comment) %>
+    <%= field_errors(f, :comment) %>
+  </div>
+  <div class="d-flex gap-2">
+    <%= f.submit review.new_record? ? "Publish review" : "Update review", class: "btn btn-primary" %>
+    <%= link_to "Cancel", property, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

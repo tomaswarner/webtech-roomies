@@ -3,6 +3,11 @@
            subtitle: "#{pluralize(@listings.size, 'room')} available" %>
 
 <div class="container">
+  <div class="d-flex gap-2 justify-content-end mb-3">
+    <%= link_to "Edit", edit_neighborhood_path(@neighborhood), class: "btn btn-outline-primary" %>
+    <%= button_to "Delete", @neighborhood, method: :delete, class: "btn btn-outline-danger",
+                  form: { data: { turbo_confirm: "Delete #{@neighborhood.name}?" } } %>
+  </div>
   <h2 class="h4 mb-3">Available rooms</h2>
   <% if @listings.any? %>
     <div class="row g-4">

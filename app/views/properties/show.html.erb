@@ -3,6 +3,12 @@
            subtitle: "#{@property.neighborhood.name} · #{@property.property_type.humanize} · Hosted by #{@property.host.name}" %>
 
 <div class="container">
+  <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
+    <%= link_to new_property_listing_path(@property), class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New listing<% end %>
+    <%= link_to "Edit property", edit_property_path(@property), class: "btn btn-outline-primary" %>
+    <%= button_to "Delete property", @property, method: :delete, class: "btn btn-outline-danger",
+                  form: { data: { turbo_confirm: "Delete this property?" } } %>
+  </div>
   <p class="text-muted">
     <%= pluralize(@property.bedrooms_count, "bedroom") %> · <%= pluralize(@property.bathrooms_count, "bathroom") %>
   </p>
@@ -26,6 +32,13 @@
     </div>
   <% else %>
     <%= render "shared/empty_state", message: "This property has no rooms on offer right now.", icon: "door-closed" %>
+  <% end %>
+
+  <% if @reviewable_visits.any? %>
+    <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2 mt-5 mb-0">
+      <span>You visited this property. How did it compare to the listing?</span>
+      <%= link_to "Write a review", new_property_review_path(@property, visit_id: @reviewable_visits.first.id), class: "btn btn-primary btn-sm" %>
+    </div>
   <% end %>
 
   <%= render "reviews/list", reviews: @reviews, property: @property %>

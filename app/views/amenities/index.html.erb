@@ -1,0 +1,32 @@
+<% content_for :title, "Amenities" %>
+<%= render "shared/page_header", title: "Amenities", subtitle: "The catalog hosts choose from when they describe a property" %>
+
+<div class="container">
+  <div class="d-flex justify-content-end mb-3">
+    <%= link_to new_amenity_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New amenity<% end %>
+  </div>
+  <% if @amenities.any? %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Name</th><th>Properties</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          <% @amenities.each do |amenity| %>
+            <tr>
+              <td><%= link_to amenity.name, amenity %></td>
+              <td><%= @property_counts.fetch(amenity.id, 0) %></td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-2">
+                  <%= link_to "Edit", edit_amenity_path(amenity), class: "btn btn-sm btn-outline-primary" %>
+                  <%= button_to "Delete", amenity, method: :delete, class: "btn btn-sm btn-outline-danger",
+                                form: { data: { turbo_confirm: "Delete #{amenity.name}?" } } %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "There are no amenities yet.", icon: "stars" %>
+  <% end %>
+</div>

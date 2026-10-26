@@ -1,0 +1,6 @@
+<% content_for :title, "New amenity" %>
+<%= render "shared/page_header", title: "New amenity" %>
+
+<div class="container" style="max-width: 640px">
+  <%= render "form", amenity: @amenity %>
+</div>
