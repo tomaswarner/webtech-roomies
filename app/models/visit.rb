@@ -10,17 +10,61 @@ class Visit < ApplicationRecord
     completed: "completed"
   }, validate: true
 
+  # Rescheduling sends a confirmed visit back to proposed so the seeker confirms the new time.
+  TRANSITIONS = {
+    "proposed" => %w[confirmed cancelled],
+    "confirmed" => %w[proposed completed cancelled],
+    "cancelled" => [],
+    "completed" => []
+  }.freeze
+
   validates :scheduled_at, presence: true
 
   validate :scheduled_after_application
   validate :application_is_shortlisted, on: :create
   validate :completed_visit_already_happened
+  validate :not_scheduled_in_the_past
+  validate :status_transition_allowed, on: :update
 
   scope :upcoming, -> { where(status: [ :proposed, :confirmed ]).where(scheduled_at: Time.current..).order(:scheduled_at) }
   scope :past, -> { where(scheduled_at: ...Time.current) }
   scope :chronological, -> { order(:scheduled_at) }
 
+  def open?
+    proposed? || confirmed?
+  end
+
+  def confirm
+    update(status: :confirmed)
+  end
+
+  def cancel
+    update(status: :cancelled)
+  end
+
+  def complete
+    update(status: :completed)
+  end
+
+  def reschedule(new_time)
+    update(scheduled_at: new_time, status: :proposed)
+  end
+
   private
+
+  def not_scheduled_in_the_past
+    return if scheduled_at.blank? || !open?
+    return unless new_record? || will_save_change_to_scheduled_at?
+
+    errors.add(:scheduled_at, "can't be in the past") if scheduled_at < Time.current
+  end
+
+  def status_transition_allowed
+    return unless will_save_change_to_status?
+
+    from, to = status_change_to_be_saved
+    errors.add(:status, "can't change from #{from} to #{to}") unless TRANSITIONS.fetch(from, []).include?(to)
+  end
 
   def scheduled_after_application
     return if scheduled_at.blank? || application.blank? || application.created_at.blank?

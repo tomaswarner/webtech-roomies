@@ -12,6 +12,15 @@ class Application < ApplicationRecord
     withdrawn: "withdrawn"
   }, validate: true
 
+  # Which states an application can move to from each state. Accepting goes through #accept.
+  TRANSITIONS = {
+    "pending" => %w[shortlisted accepted rejected withdrawn],
+    "shortlisted" => %w[accepted rejected withdrawn],
+    "accepted" => [],
+    "rejected" => [],
+    "withdrawn" => []
+  }.freeze
+
   validates :message, presence: true
   validates :move_in_date, presence: true
   validates :stay_duration_months, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
@@ -21,11 +30,65 @@ class Application < ApplicationRecord
 
   validate :seeker_is_not_the_host
   validate :listing_is_published, on: :create
-  validate :stay_covers_minimum_stay
+  validate :stay_covers_minimum_stay, if: -> { new_record? || will_save_change_to_stay_duration_months? }
+  validate :status_transition_allowed, on: :update
 
   scope :awaiting_answer, -> { where(status: [ :pending, :shortlisted ]) }
   scope :decided, -> { where(status: [ :accepted, :rejected, :withdrawn ]) }
   scope :newest_first, -> { order(created_at: :desc) }
+
+  def withdrawable?
+    pending? || shortlisted?
+  end
+
+  def editable?
+    pending?
+  end
+
+  # Only the seeker who wrote the application can pull it back, and only while it is still open.
+  def withdraw_by(user)
+    if user.blank? || user.id != seeker_id
+      errors.add(:base, "Only the seeker who sent the application can withdraw it")
+      return false
+    end
+
+    update(status: :withdrawn)
+  end
+
+  def shortlist
+    update(status: :shortlisted)
+  end
+
+  def reject
+    update(status: :rejected)
+  end
+
+  # Accepting an applicant is a single decision: this application becomes accepted, every other open
+  # application on the listing is rejected and the listing moves to reserved. If any step fails the
+  # transaction is rolled back and nothing changes. Returns the applications rejected along the way.
+  def accept
+    rejected = []
+
+    transaction do
+      listing.lock!
+      unless listing.published?
+        errors.add(:base, "This listing is #{listing.status} and can no longer accept an applicant")
+        raise ActiveRecord::Rollback
+      end
+
+      update!(status: :accepted)
+      rejected = listing.applications.where.not(id: id).awaiting_answer.to_a
+      rejected.each { |other| other.update!(status: :rejected) }
+      listing.update!(status: :reserved)
+    end
+
+    errors.empty? ? rejected : false
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+    restore_attributes
+    listing.reload
+    errors.add(:base, "The applicant could not be accepted: #{e.message}")
+    false
+  end
 
   def to_s
     "#{seeker.name} → #{listing.title}"
@@ -45,6 +108,13 @@ class Application < ApplicationRecord
     return if listing.blank?
 
     errors.add(:listing, "is not open for applications") unless listing.published?
+  end
+
+  def status_transition_allowed
+    return unless will_save_change_to_status?
+
+    from, to = status_change_to_be_saved
+    errors.add(:status, "can't change from #{from} to #{to}") unless TRANSITIONS.fetch(from, []).include?(to)
   end
 
   def stay_covers_minimum_stay
