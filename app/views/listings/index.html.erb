@@ -1,18 +1,9 @@
 <% content_for :title, "Search rooms" %>
 <%= render "shared/page_header", title: "Search rooms", subtitle: "Published rooms in shared homes" %>
 
-<div class="container">
-  <%= render "listings/search_form", neighborhoods: @neighborhoods %>
+<div class="container" data-controller="listing-search" data-listing-search-url-value="<%= api_v1_listings_path %>">
+  <%= render "listings/search_form", neighborhoods: @neighborhoods, amenities: @amenities, live: true %>
 
-  <div class="mt-4">
-    <% if @listings.any? %>
-      <div class="row g-4">
-        <% @listings.each do |listing| %>
-          <div class="col-md-6 col-lg-4"><%= render listing %></div>
-        <% end %>
-      </div>
-    <% else %>
-      <%= render "shared/empty_state", message: "No rooms match your search.", icon: "search" %>
-    <% end %>
-  </div>
+  <p class="text-muted small mt-4 mb-2" data-listing-search-target="status" role="status" aria-live="polite">Loading rooms...</p>
+  <div class="row g-4" data-listing-search-target="results"></div>
 </div>

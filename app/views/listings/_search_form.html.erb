@@ -1,4 +1,8 @@
-<%= form_with url: listings_path, method: :get, class: "row g-3 align-items-end", data: { turbo_frame: "_top" } do |f| %>
+<%# On the search page (live: true) the listing-search controller sends this form to the JSON API with fetch.
+    On the home page it is a plain GET form that opens the search page with the same filters. %>
+<%= form_with url: listings_path, method: :get, class: "row g-3 align-items-end",
+              data: { turbo_frame: "_top", listing_search_target: "form",
+                      action: ("submit->listing-search#search change->listing-search#search" if local_assigns[:live]) } do |f| %>
   <div class="col-md-3">
     <%= f.label :neighborhood_id, "Neighborhood", class: "form-label" %>
     <%= f.select :neighborhood_id, options_from_collection_for_select(neighborhoods, :id, :name, params[:neighborhood_id]),
@@ -6,7 +10,7 @@
   </div>
   <div class="col-md-3">
     <%= f.label :max_rent, "Max rent (CLP)", class: "form-label" %>
-    <%= f.number_field :max_rent, value: params[:max_rent], min: 0, step: 10_000, placeholder: "400000", class: "form-control" %>
+    <%= f.number_field :max_rent, value: params[:max_rent], min: 1, step: 1, placeholder: "400000", class: "form-control" %>
   </div>
   <div class="col-md-3">
     <%= f.label :available_from, "Move in by", class: "form-label" %>
@@ -15,5 +19,18 @@
   <div class="col-md-3">
     <%= f.submit "Search", name: nil, class: "btn btn-primary w-100" %>
   </div>
-
+  <% if local_assigns[:amenities].present? %>
+    <fieldset class="col-12">
+      <legend class="form-label fs-6 mb-1">Amenities</legend>
+      <div class="d-flex flex-wrap gap-3">
+        <% amenities.each do |amenity| %>
+          <div class="form-check">
+            <%= check_box_tag "amenity_ids[]", amenity.id, Array(params[:amenity_ids]).include?(amenity.id.to_s),
+                              id: "amenity_#{amenity.id}", class: "form-check-input" %>
+            <%= label_tag "amenity_#{amenity.id}", amenity.name, class: "form-check-label" %>
+          </div>
+        <% end %>
+      </div>
+    </fieldset>
+  <% end %>
 <% end %>
