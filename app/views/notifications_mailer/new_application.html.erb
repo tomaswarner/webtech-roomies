@@ -1,0 +1,7 @@
+<p>Hi <%= @host.first_name %>,</p>
+<p><%= @application.seeker.name %> applied to <strong><%= @listing.title %></strong>.</p>
+<p>
+  Move-in date: <%= l(@application.move_in_date, format: :long) %><br>
+  Intended stay: <%= pluralize(@application.stay_duration_months, "month") %>
+</p>
+<p><%= link_to "Read the application", application_url(@application) %></p>
