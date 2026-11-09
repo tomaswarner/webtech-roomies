@@ -64,9 +64,102 @@ webtech-roomies/
 ## Assignment 3 — CRUD, Photographs, Rich Text, and Hotwire
 
 - **Upload size limit**: listing photographs must be JPEG, PNG, WebP or GIF images of **at most 5 MB each**.
-- **Acting as a user**: there is no authentication yet; the "Acting as" select in the navigation bar chooses the user
-  every action is performed as.
+- **Acting as a user**: replaced by real accounts in Assignment 4.
 - **New setup steps**: install libvips (see Setup) and run `bin/rails db:migrate db:seed`.
+
+## Assignment 4 — Authentication, Authorization, and JSON API
+
+- **New setup steps**: run `bundle install`, then `bin/rails db:migrate db:seed`.
+- The "Acting as" selector of Assignment 3 is gone: the current user is the one who signed in.
+- **Authentication** (Rails 8 generator): sign up, sign in and out, password reset by email and an editable profile
+  (name, email, phone and a short bio) at `/profile`.
+- **Emails**: in development they are not sent, they are written to `tmp/mails` (one file per recipient). The host
+  receives an email through Active Job (`deliver_later`) when somebody applies to one of their listings. Previews are
+  at `/rails/mailers`.
+
+### Credentials
+
+Every seeded user has the password **`roomies2026`**.
+
+| Role | Email | Notes |
+| --- | --- | --- |
+| Moderator | `andrea.fuentes@roomies.cl` | Also `ignacio.perez@roomies.cl` |
+| Member (host) | `camila.rojas@gmail.com` | Hosts two properties, with a draft listing and applications received |
+| Member (host) | `matias.gonzalez@gmail.com` | Hosts two properties, with a draft listing and applications received |
+| Member (seeker) | `sofia.morales@miuandes.cl` | Has applications sent to Matías and Benjamín |
+| Member (seeker) | `seba.torres@gmail.com` | Has a completed visit that can still be reviewed |
+
+### Roles
+
+- **Visitor** (not signed in): browses and searches published listings, and sees listing pages, property pages and
+  reviews. Everything else asks to sign in.
+- **Member** (`role: member`, the default): everything a visitor can do, plus creating properties and listings and
+  editing or deleting their own, applying to other people's listings, answering (shortlist, reject, accept) the
+  applications received on their own listings, proposing and changing visits as host or applicant, reviewing a
+  property after their own completed visit, deleting their own reviews and reporting listings.
+- **Moderator** (`role: moderator`): everything a member can do, plus seeing drafts and every application, editing or
+  deleting (taking down) any property or listing, deleting any review, resolving reports and managing the neighborhoods
+  and amenities. A moderator does not answer applications, propose visits or write reviews for others.
+
+Permissions are decided by one Pundit policy per model in `app/policies`. Every controller action calls `authorize` or
+`policy_scope`; the inbox and the sent applications are built from `RentalApplicationPolicy::Scope` (the policy of the
+`Application` model), and applications and visits are looked up inside their scope, so an id typed in the URL that is
+not the user's never loads. A refused action answers 403 with a page that explains why (texts in
+`config/locales/pundit.en.yml`) and changes nothing.
+
+### JSON API
+
+Public and read-only, no authentication. It exposes the rooms, never the people: no host, address, applications,
+emails, phones or review authors.
+
+**`GET /api/v1/listings`** — published listings, newest first. Optional filters:
+
+| Parameter | Format | Example |
+| --- | --- | --- |
+| `neighborhood_id` | whole number | `neighborhood_id=3` |
+| `max_rent` | positive whole number (CLP) | `max_rent=350000` |
+| `available_from` | date `YYYY-MM-DD`: rooms available on or before it | `available_from=2026-12-01` |
+| `amenity_ids[]` | whole numbers, the property must have all of them | `amenity_ids[]=1&amenity_ids[]=4` |
+
+```json
+[
+  {
+    "id": 191,
+    "title": "Bright room with private bathroom near Pedro de Valdivia",
+    "status": "published",
+    "monthly_rent": "430000",
+    "deposit": "430000",
+    "available_on": "2026-11-29",
+    "minimum_stay_months": 6,
+    "furnished": true,
+    "private_bathroom": true,
+    "neighborhood": { "id": 117, "name": "Providencia" },
+    "property": {
+      "property_type": "apartment",
+      "bedrooms_count": 3,
+      "bathrooms_count": 2,
+      "amenities": [ { "id": 157, "name": "24h concierge" }, { "id": 152, "name": "Balcony" } ]
+    },
+    "photo_url": "http://localhost:3000/rails/active_storage/representations/...",
+    "url": "http://localhost:3000/listings/191"
+  }
+]
+```
+
+**`GET /api/v1/listings/:id`** — one published, reserved or rented listing, with the same fields plus `description`
+and `house_rules` (plain text).
+
+Money travels as a string. Status codes:
+
+| Status | When | Body |
+| --- | --- | --- |
+| 200 | Success | The listing or the array of listings |
+| 400 | A filter is malformed (e.g. `max_rent=abc`) | `{ "errors": ["max_rent must be a positive whole number"] }` |
+| 404 | The listing does not exist, or it is a draft or withdrawn | `{ "errors": ["There is no listing with id 999"] }` |
+| 404 | Any other path under `/api/v1` | `{ "errors": ["There is no route for GET /api/v1/..."] }` |
+
+The search page (`/listings`) uses this API: `app/javascript/controllers/listing_search_controller.js` sends the
+filters with `fetch` and draws the results without reloading the page.
 
 ## Course
 

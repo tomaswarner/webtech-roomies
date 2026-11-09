@@ -20,6 +20,9 @@ end
 
 today = Date.current
 
+# Every seeded user signs in with this password (see README.md).
+SEED_PASSWORD = "roomies2026"
+
 # --- Users -------------------------------------------------------------------------------------------
 
 puts "Creating users..."
@@ -44,8 +47,12 @@ users = {}
   [ :florencia, "Florencia Navarro", "flo.navarro@gmail.com", "+56 9 7429 3317", :member ],
   [ :lucas, "Lucas Paredes", "lucas.paredes@usach.cl", "+56 9 8873 5509", :member ]
 ].each do |key, name, email, phone, role|
-  users[key] = User.create!(name: name, email: email, phone: phone, role: role, created_at: 9.months.ago)
+  users[key] = User.create!(name: name, email: email, phone: phone, role: role, password: SEED_PASSWORD,
+                            created_at: 9.months.ago)
 end
+
+users[:camila].update!(bio: "Architect, early riser and plant lover. I host two flats and I like a quiet, tidy home.")
+users[:sofia].update!(bio: "Engineering student at Universidad de los Andes looking for a calm room near the metro.")
 
 # --- Catalogs ----------------------------------------------------------------------------------------
 
@@ -466,6 +473,11 @@ Report.create!(listing: l_vitacura, reporter: users[:felipe], reason: "other", s
                details: "The rent seems very high for a shared room, maybe it's a typo?")
 
 puts "Done!"
+puts
+puts "Every user signs in with the password #{SEED_PASSWORD}. For example:"
+puts "  moderator  andrea.fuentes@roomies.cl"
+puts "  host       camila.rojas@gmail.com"
+puts "  seeker     sofia.morales@miuandes.cl"
 [ User, Neighborhood, Amenity, Property, PropertyAmenity, Listing, ActiveStorage::Attachment,
   Application, Visit, Review, SavedListing, Report ].each do |model|
   puts "  #{model.name.pluralize.ljust(18)} #{model.count}"
