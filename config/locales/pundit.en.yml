@@ -1,0 +1,39 @@
+en:
+  pundit:
+    default: "You are not allowed to do that."
+    application_not_found: "This application does not exist or it is not yours. An application can only be seen by the seeker who wrote it and the host of the listing."
+    visit_not_found: "This visit does not exist or it is not yours. Only the host of the listing and the applicant can see and change a visit."
+    listing_policy:
+      show?: "This listing is a draft. Only its host and the moderators can see it."
+      create?: "Only the host of this property can publish a room in it."
+      update?: "Only the host of this listing or a moderator can change it."
+      destroy?: "Only the host of this listing or a moderator can delete it."
+    property_policy:
+      update?: "Only the host of this property or a moderator can change it."
+      destroy?: "Only the host of this property or a moderator can delete it."
+    rental_application_policy:
+      show?: "An application can only be seen by the seeker who wrote it and the host of the listing."
+      create?: "You can't apply to your own listing."
+      decide?: "Only the host of the listing can shortlist, reject or accept an application."
+      withdraw?: "Only the seeker who sent the application can withdraw it."
+    visit_policy:
+      create?: "Only the host of the listing or the applicant can propose a visit."
+      update?: "Only the host of the listing or the applicant can change a visit."
+    review_policy:
+      create?: "You can review a property only after your own completed visit to it."
+      update?: "You can only edit your own reviews."
+      destroy?: "You can only delete your own reviews."
+    report_policy:
+      index?: "Only moderators review reports."
+      update?: "Only moderators can resolve a report."
+    neighborhood_policy:
+      create?: "Only moderators manage the neighborhoods."
+      update?: "Only moderators manage the neighborhoods."
+      destroy?: "Only moderators manage the neighborhoods."
+    amenity_policy:
+      create?: "Only moderators manage the amenities."
+      update?: "Only moderators manage the amenities."
+      destroy?: "Only moderators manage the amenities."
+    user_policy:
+      show?: "You can only see your own profile."
+      update?: "You can only edit your own profile."

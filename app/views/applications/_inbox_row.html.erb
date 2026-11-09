@@ -9,6 +9,7 @@
   <td><%= status_badge(application.status) %></td>
   <td class="text-end">
     <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+      <% if policy(application).decide? %>
       <% if application.pending? %>
         <%= button_to "Shortlist", application, method: :patch, params: { application: { status: "shortlisted" } },
                       class: "btn btn-sm btn-outline-info" %>
@@ -23,6 +24,7 @@
       <% if application.withdrawable? %>
         <%= button_to "Reject", application, method: :patch, params: { application: { status: "rejected" } },
                       class: "btn btn-sm btn-outline-danger" %>
+      <% end %>
       <% end %>
     </div>
   </td>

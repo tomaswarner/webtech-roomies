@@ -1,16 +1,19 @@
 class ListingsController < ApplicationController
+  allow_unauthenticated_access only: [ :index, :show ]
+  # The search page only draws the form: the results come from the JSON API (Api::V1::ListingsController),
+  # which asks the published scope itself.
+  skip_after_action :verify_pundit_authorization, only: :index
   before_action :set_listing, only: [ :edit, :update, :destroy ]
 
   def index
+    authorize Listing
     @neighborhoods = Neighborhood.by_name
-    @listings = Listing.search(search_params)
-                       .with_attached_photos.includes(property: :neighborhood)
-                       .newest_first
+    @amenities = Amenity.by_name
   end
 
   def show
-    @listing = Listing.visible_to(current_user).with_attached_photos
-                      .includes(property: [ :neighborhood, :host, :amenities ]).find(params[:id])
+    @listing = Listing.with_attached_photos.includes(property: [ :neighborhood, :host, :amenities ]).find(params[:id])
+    authorize @listing
     @property = @listing.property
     @reviews = @property.reviews.includes(:seeker).newest_first
     @application = current_user&.applications&.find_by(listing: @listing) || Application.new(listing: @listing)
@@ -19,11 +22,13 @@ class ListingsController < ApplicationController
   def new
     @property = Property.find(params[:property_id])
     @listing = @property.listings.build
+    authorize @listing
   end
 
   def create
     @property = Property.find(params[:property_id])
     @listing = @property.listings.build(listing_params)
+    authorize @listing
 
     if @listing.save
       redirect_to @listing, notice: "Listing created as a draft. Publish it when it is ready."
@@ -62,14 +67,11 @@ class ListingsController < ApplicationController
 
   def set_listing
     @listing = Listing.find(params[:id])
+    authorize @listing
   end
 
   def listing_params
     params.expect(listing: [ :title, :monthly_rent, :deposit, :available_on, :minimum_stay_months, :furnished,
                              :private_bathroom, :description, :house_rules, :status, photos: [] ])
-  end
-
-  def search_params
-    params.permit(:neighborhood_id, :max_rent, :available_from)
   end
 end

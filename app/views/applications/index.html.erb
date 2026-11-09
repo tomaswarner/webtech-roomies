@@ -51,4 +51,34 @@
       <%= render "shared/empty_state", message: "You have not applied to any room yet.", icon: "envelope" %>
     <% end %>
   </section>
+
+  <% if @all_applications %>
+    <section class="mt-5">
+      <h2 class="h4 mb-3">All applications <span class="badge text-bg-warning align-middle">Moderator</span></h2>
+      <% if @all_applications.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr><th>Seeker</th><th>Room</th><th>Status</th><th>Sent</th></tr>
+            </thead>
+            <tbody>
+              <% @all_applications.each do |application| %>
+                <tr>
+                  <td><%= link_to application.seeker.name, application %></td>
+                  <td>
+                    <%= link_to application.listing.title, application.listing %><br>
+                    <span class="small text-muted"><%= application.listing.property.neighborhood.name %></span>
+                  </td>
+                  <td><%= status_badge(application.status) %></td>
+                  <td class="text-muted small"><%= time_ago_in_words(application.created_at) %> ago</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <%= render "shared/empty_state", message: "Nobody has applied to any listing yet.", icon: "inbox" %>
+      <% end %>
+    </section>
+  <% end %>
 </div>

@@ -1,0 +1,35 @@
+<% content_for :title, "Edit your profile" %>
+<%= render "shared/page_header", title: "Edit your profile" %>
+
+<div class="container" style="max-width: 720px">
+  <%= form_with model: @user, url: profile_path, method: :patch, class: "card card-body shadow-sm" do |f| %>
+    <%= render "shared/base_errors", record: @user %>
+    <div class="mb-3">
+      <%= f.label :name, class: "form-label" %>
+      <%= f.text_field :name, required: true, class: field_class(f, :name) %>
+      <%= field_errors(f, :name) %>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <%= f.label :email, "Email address", class: "form-label" %>
+        <%= f.email_field :email, required: true, class: field_class(f, :email) %>
+        <%= field_errors(f, :email) %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :phone, class: "form-label" %>
+        <%= f.telephone_field :phone, placeholder: "+56 9 1234 5678", class: field_class(f, :phone) %>
+        <%= field_errors(f, :phone) %>
+      </div>
+    </div>
+    <div class="mb-3">
+      <%= f.label :bio, class: "form-label" %>
+      <%= f.text_area :bio, rows: 4, maxlength: 500, placeholder: "A few words about you: what you do, how you like to live...",
+                      class: field_class(f, :bio) %>
+      <%= field_errors(f, :bio) %>
+    </div>
+    <div class="d-flex gap-2">
+      <%= f.submit "Save profile", class: "btn btn-primary" %>
+      <%= link_to "Cancel", profile_path, class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+</div>

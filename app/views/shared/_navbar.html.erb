@@ -8,19 +8,28 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><%= nav_link_to "Search", listings_path %></li>
-        <li class="nav-item"><%= nav_link_to "Neighborhoods", neighborhoods_path %></li>
-        <li class="nav-item"><%= nav_link_to "Amenities", amenities_path %></li>
         <li class="nav-item"><%= nav_link_to "Properties", properties_path %></li>
-        <li class="nav-item"><%= nav_link_to "Applications", applications_path %></li>
+        <% if current_user %>
+          <li class="nav-item"><%= nav_link_to "Neighborhoods", neighborhoods_path %></li>
+          <li class="nav-item"><%= nav_link_to "Amenities", amenities_path %></li>
+          <li class="nav-item"><%= nav_link_to "Applications", applications_path %></li>
+          <% if policy(Report).index? %>
+            <li class="nav-item"><%= nav_link_to "Reports", reports_path %></li>
+          <% end %>
+        <% end %>
       </ul>
-      <%= form_with url: acting_user_path, method: :patch, class: "d-flex align-items-center ms-lg-3 mt-2 mt-lg-0" do |f| %>
-        <%= f.label :user_id, "Acting as", class: "text-white-50 small me-2 text-nowrap" %>
-        <%= f.select :user_id,
-                     options_from_collection_for_select(User.by_name, :id, :name, current_user&.id),
-                     { include_blank: "Visitor" },
-                     class: "form-select form-select-sm" %>
-        <%= f.submit "Switch", class: "btn btn-sm btn-light ms-2" %>
-      <% end %>
+      <div class="d-flex align-items-center gap-2 ms-lg-3 mt-2 mt-lg-0">
+        <% if current_user %>
+          <%= link_to profile_path, class: "btn btn-sm btn-outline-light" do %>
+            <i class="bi bi-person-circle"></i> <%= current_user.first_name %>
+            <% if current_user.moderator? %><span class="badge text-bg-warning ms-1">Moderator</span><% end %>
+          <% end %>
+          <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-sm btn-light" %>
+        <% else %>
+          <%= link_to "Sign in", new_session_path, class: "btn btn-sm btn-outline-light" %>
+          <%= link_to "Sign up", new_registration_path, class: "btn btn-sm btn-light" %>
+        <% end %>
+      </div>
     </div>
   </div>
 </nav>

@@ -4,6 +4,11 @@ class Application < ApplicationRecord
   has_one :property, through: :listing
   has_many :visits, -> { order(:scheduled_at) }, dependent: :destroy, inverse_of: :application
 
+  # Pundit would look for ApplicationPolicy, which is the base class of every policy.
+  def self.policy_class
+    RentalApplicationPolicy
+  end
+
   enum :status, {
     pending: "pending",
     shortlisted: "shortlisted",

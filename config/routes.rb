@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
-  root "pages#home"
+  resource :session
+  resources :passwords, param: :token
+  resource :registration, only: [ :new, :create ]
+  resource :profile, only: [ :show, :edit, :update ]
 
-  resource :acting_user, only: :update
+  root "pages#home"
 
   resources :neighborhoods
   resources :amenities, except: :show
@@ -13,6 +16,7 @@ Rails.application.routes.draw do
 
   resources :listings, only: [ :index, :show, :edit, :update, :destroy ] do
     resources :applications, only: :create
+    resources :reports, only: [ :new, :create ]
   end
 
   resources :applications, only: [ :index, :show, :update ] do
@@ -22,6 +26,15 @@ Rails.application.routes.draw do
   resources :visits, only: [ :edit, :update ]
 
   resources :reviews, only: [ :edit, :update, :destroy ]
+
+  resources :reports, only: [ :index, :update ]
+
+  namespace :api, defaults: { format: :json } do
+    namespace :v1 do
+      resources :listings, only: [ :index, :show ]
+      match "(*unmatched)", to: "base#route_not_found", via: :all, format: false
+    end
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check

@@ -1,16 +1,17 @@
 class ReviewsController < ApplicationController
-  before_action :require_current_user, only: [ :new, :create ]
   before_action :set_property, only: [ :new, :create ]
   before_action :set_review, only: [ :edit, :update, :destroy ]
 
   def new
-    @review = @property.reviews.build(visit: reviewable_visits.find_by(id: params[:visit_id]))
     @visits = reviewable_visits.completed
+    @review = @property.reviews.build(visit: @visits.find_by(id: params[:visit_id]) || @visits.first, seeker: current_user)
+    authorize @review
   end
 
   def create
     @review = @property.reviews.build(review_params.merge(seeker: current_user))
     @review.visit = reviewable_visits.find_by(id: review_params[:visit_id])
+    authorize @review
 
     if @review.save
       redirect_to @property, notice: "Thanks! Your review was published."
@@ -46,6 +47,7 @@ class ReviewsController < ApplicationController
 
   def set_review
     @review = Review.find(params[:id])
+    authorize @review
   end
 
   def review_params

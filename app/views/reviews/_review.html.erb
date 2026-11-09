@@ -6,12 +6,14 @@
   <p class="mb-1"><%= review.comment %></p>
   <div class="d-flex justify-content-between align-items-center">
     <p class="small text-muted mb-0">Visited <%= time_ago_in_words(review.created_at) %> ago</p>
-    <% if current_user && review.seeker_id == current_user.id %>
-      <div class="d-flex gap-2">
+    <div class="d-flex gap-2">
+      <% if policy(review).edit? %>
         <%= link_to "Edit", edit_review_path(review), class: "btn btn-sm btn-link" %>
+      <% end %>
+      <% if policy(review).destroy? %>
         <%= button_to "Delete", review, method: :delete, class: "btn btn-sm btn-link text-danger",
-                      data: { turbo_confirm: "Delete your review?" } %>
-      </div>
-    <% end %>
+                      data: { turbo_confirm: "Delete this review?" } %>
+      <% end %>
+    </div>
   </div>
 </div>

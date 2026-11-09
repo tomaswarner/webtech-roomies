@@ -3,13 +3,15 @@ class VisitsController < ApplicationController
 
   # The host proposes a visit on a shortlisted application.
   def new
-    @application = Application.find(params[:application_id])
+    @application = find_application
     @visit = @application.visits.build
+    authorize @visit
   end
 
   def create
-    @application = Application.find(params[:application_id])
+    @application = find_application
     @visit = @application.visits.build(visit_params)
+    authorize @visit
 
     if @visit.save
       redirect_to @application, notice: "Visit proposed for #{I18n.l(@visit.scheduled_at, format: :long)}."
@@ -41,8 +43,20 @@ class VisitsController < ApplicationController
 
   private
 
+  # Applications and visits are looked up inside the policy scope, so an id typed in the URL that is not
+  # the user's lands on the explanation page.
   def set_visit
-    @visit = Visit.find(params[:id])
+    @visit = policy_scope(Visit).find_by(id: params[:id])
+    raise Pundit::NotAuthorizedError, I18n.t("pundit.visit_not_found") if @visit.nil?
+
+    authorize @visit
+  end
+
+  def find_application
+    application = policy_scope(Application).find_by(id: params[:application_id])
+    raise Pundit::NotAuthorizedError, I18n.t("pundit.application_not_found") if application.nil?
+
+    application
   end
 
   def visit_params

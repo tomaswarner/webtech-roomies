@@ -4,10 +4,16 @@
 
 <div class="container">
   <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
-    <%= link_to new_property_listing_path(@property), class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New listing<% end %>
-    <%= link_to "Edit property", edit_property_path(@property), class: "btn btn-outline-primary" %>
-    <%= button_to "Delete property", @property, method: :delete, class: "btn btn-outline-danger",
-                  data: { turbo_confirm: "Delete this property?" } %>
+    <% if policy(Listing.new(property_id: @property.id)).create? %>
+      <%= link_to new_property_listing_path(@property), class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New listing<% end %>
+    <% end %>
+    <% if policy(@property).update? %>
+      <%= link_to "Edit property", edit_property_path(@property), class: "btn btn-outline-primary" %>
+    <% end %>
+    <% if policy(@property).destroy? %>
+      <%= button_to "Delete property", @property, method: :delete, class: "btn btn-outline-danger",
+                    data: { turbo_confirm: "Delete this property?" } %>
+    <% end %>
   </div>
   <p class="text-muted">
     <%= pluralize(@property.bedrooms_count, "bedroom") %> · <%= pluralize(@property.bathrooms_count, "bathroom") %>

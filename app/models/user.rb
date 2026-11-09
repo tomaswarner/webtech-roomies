@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  has_secure_password
+  has_many :sessions, dependent: :destroy
   has_many :properties, foreign_key: :host_id, inverse_of: :host, dependent: :restrict_with_error
   has_many :listings, through: :properties
   has_many :received_applications, through: :listings, source: :applications
@@ -16,6 +18,7 @@ class User < ApplicationRecord
   before_validation :normalize_email
 
   validates :name, presence: true
+  validates :bio, length: { maximum: 500 }
   validates :email, presence: true, uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }
 

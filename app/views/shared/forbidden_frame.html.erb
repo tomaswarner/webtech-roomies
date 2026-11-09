@@ -1,0 +1,4 @@
+<%# The refusal for a request made from inside a Turbo Frame: it replaces only that frame. %>
+<%= turbo_frame_tag request.headers["Turbo-Frame"] do %>
+  <div class="alert alert-warning mt-3" role="alert"><%= @reason %> Nothing was changed.</div>
+<% end %>

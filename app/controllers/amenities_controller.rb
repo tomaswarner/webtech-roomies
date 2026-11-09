@@ -2,16 +2,18 @@ class AmenitiesController < ApplicationController
   before_action :set_amenity, only: [ :edit, :update, :destroy ]
 
   def index
-    @amenities = Amenity.by_name
+    @amenities = policy_scope(Amenity).by_name
     @property_counts = PropertyAmenity.group(:amenity_id).count
   end
 
   def new
     @amenity = Amenity.new
+    authorize @amenity
   end
 
   def create
     @amenity = Amenity.new(amenity_params)
+    authorize @amenity
 
     if @amenity.save
       redirect_to amenities_path, notice: "Amenity created."
@@ -45,6 +47,7 @@ class AmenitiesController < ApplicationController
 
   def set_amenity
     @amenity = Amenity.find(params[:id])
+    authorize @amenity
   end
 
   def amenity_params

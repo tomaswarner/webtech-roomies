@@ -3,7 +3,9 @@
 
 <div class="container">
   <div class="d-flex justify-content-end mb-3">
-    <%= link_to new_neighborhood_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New neighborhood<% end %>
+    <% if policy(Neighborhood).create? %>
+      <%= link_to new_neighborhood_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New neighborhood<% end %>
+    <% end %>
   </div>
   <div class="row g-4">
     <% @neighborhoods.each do |neighborhood| %>

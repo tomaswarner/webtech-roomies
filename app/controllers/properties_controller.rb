@@ -1,13 +1,13 @@
 class PropertiesController < ApplicationController
+  allow_unauthenticated_access only: [ :index, :show ]
   before_action :set_property, only: [ :show, :edit, :update, :destroy ]
-  before_action :require_current_user, only: [ :new, :create ]
 
   def index
-    @properties = Property.includes(:neighborhood, :host).by_address
+    @properties = policy_scope(Property).includes(:neighborhood, :host).by_address
   end
 
   def show
-    @listings = Listing.visible_to(current_user).where(property: @property)
+    @listings = policy_scope(Listing).where(property: @property)
                        .with_attached_photos.includes(property: :neighborhood).order(:status, :monthly_rent)
     @reviews = @property.reviews.includes(:seeker).newest_first
     @reviewable_visits = reviewable_visits
@@ -15,10 +15,12 @@ class PropertiesController < ApplicationController
 
   def new
     @property = current_user.properties.build
+    authorize @property
   end
 
   def create
     @property = current_user.properties.build(property_params)
+    authorize @property
 
     if @property.save
       redirect_to @property, notice: "Property created. You can now publish a room inside it."
@@ -52,6 +54,7 @@ class PropertiesController < ApplicationController
 
   def set_property
     @property = Property.includes(:neighborhood, :host, :amenities).find(params[:id])
+    authorize @property
   end
 
   def property_params

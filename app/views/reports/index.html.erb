@@ -1,0 +1,45 @@
+<% content_for :title, "Reports" %>
+<%= render "shared/page_header", title: "Reports", subtitle: "Listings reported by members. Take a listing down from its page (Withdraw)." %>
+
+<div class="container">
+  <% if @reports.any? %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Listing</th><th>Reason</th><th>Reported by</th><th>Status</th><th class="text-end">Resolve</th></tr>
+        </thead>
+        <tbody>
+          <% @reports.each do |report| %>
+            <tr>
+              <td>
+                <%= link_to report.listing.title, report.listing %> <%= status_badge(report.listing.status) %><br>
+                <span class="small text-muted"><%= report.listing.property.neighborhood.name %></span>
+              </td>
+              <td>
+                <%= report.reason.humanize %>
+                <% if report.details.present? %><br><span class="small text-muted"><%= report.details %></span><% end %>
+              </td>
+              <td><%= report.reporter.name %><br><span class="small text-muted"><%= time_ago_in_words(report.created_at) %> ago</span></td>
+              <td>
+                <%= status_badge(report.status) %>
+                <% if report.resolved_by %><br><span class="small text-muted">by <%= report.resolved_by.name %></span><% end %>
+              </td>
+              <td class="text-end">
+                <% if report.pending? && policy(report).update? %>
+                  <div class="d-inline-flex gap-1">
+                    <%= button_to "Resolve", report, method: :patch, params: { report: { status: "resolved" } },
+                                  class: "btn btn-sm btn-success" %>
+                    <%= button_to "Dismiss", report, method: :patch, params: { report: { status: "dismissed" } },
+                                  class: "btn btn-sm btn-outline-secondary" %>
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", message: "There are no reports.", icon: "flag" %>
+  <% end %>
+</div>

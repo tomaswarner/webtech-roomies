@@ -3,7 +3,9 @@
 
 <div class="container">
   <div class="d-flex justify-content-end mb-3">
-    <%= link_to new_amenity_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New amenity<% end %>
+    <% if policy(Amenity).create? %>
+      <%= link_to new_amenity_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New amenity<% end %>
+    <% end %>
   </div>
   <% if @amenities.any? %>
     <div class="table-responsive">
@@ -16,9 +18,13 @@
               <td><%= @property_counts.fetch(amenity.id, 0) %></td>
               <td class="text-end">
                 <div class="d-inline-flex gap-2">
-                  <%= link_to "Edit", edit_amenity_path(amenity), class: "btn btn-sm btn-outline-primary" %>
-                  <%= button_to "Delete", amenity, method: :delete, class: "btn btn-sm btn-outline-danger",
-                                data: { turbo_confirm: "Delete #{amenity.name}?" } %>
+                  <% if policy(amenity).update? %>
+                    <%= link_to "Edit", edit_amenity_path(amenity), class: "btn btn-sm btn-outline-primary" %>
+                  <% end %>
+                  <% if policy(amenity).destroy? %>
+                    <%= button_to "Delete", amenity, method: :delete, class: "btn btn-sm btn-outline-danger",
+                                  data: { turbo_confirm: "Delete #{amenity.name}?" } %>
+                  <% end %>
                 </div>
               </td>
             </tr>

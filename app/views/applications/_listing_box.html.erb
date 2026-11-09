@@ -10,8 +10,12 @@
       <% end %>
 
       <% if current_user.blank? %>
-        <p class="text-muted mb-0">Choose the user you are acting as in the navigation bar to apply.</p>
-      <% elsif listing.hosted_by?(current_user) %>
+        <p class="text-muted mb-2">You need an account to apply.</p>
+        <div class="d-flex gap-2">
+          <%= link_to "Sign in", new_session_path, class: "btn btn-primary btn-sm", data: { turbo_frame: "_top" } %>
+          <%= link_to "Sign up", new_registration_path, class: "btn btn-outline-primary btn-sm", data: { turbo_frame: "_top" } %>
+        </div>
+      <% elsif !policy(Application.new(listing_id: listing.id)).create? %>
         <p class="text-muted mb-2">You host this listing.</p>
         <%= link_to "Go to your application inbox", applications_path, class: "btn btn-outline-primary btn-sm", data: { turbo_frame: "_top" } %>
       <% elsif application.persisted? %>
@@ -22,7 +26,7 @@
         </p>
         <div class="d-flex flex-wrap gap-2">
           <%= link_to "View application", application, class: "btn btn-outline-primary btn-sm", data: { turbo_frame: "_top" } %>
-          <% if application.withdrawable? %>
+          <% if application.withdrawable? && policy(application).withdraw? %>
             <%= button_to "Withdraw", application, method: :patch, params: { application: { status: "withdrawn" } },
                           class: "btn btn-outline-danger btn-sm", data: { turbo_confirm: "Withdraw your application?" } %>
           <% end %>

@@ -2,7 +2,7 @@ class NeighborhoodsController < ApplicationController
   before_action :set_neighborhood, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @neighborhoods = Neighborhood.by_name
+    @neighborhoods = policy_scope(Neighborhood).by_name
     @property_counts = Property.group(:neighborhood_id).count
     @published_counts = Listing.published.joins(:property).group("properties.neighborhood_id").count
   end
@@ -14,10 +14,12 @@ class NeighborhoodsController < ApplicationController
 
   def new
     @neighborhood = Neighborhood.new
+    authorize @neighborhood
   end
 
   def create
     @neighborhood = Neighborhood.new(neighborhood_params)
+    authorize @neighborhood
 
     if @neighborhood.save
       redirect_to @neighborhood, notice: "Neighborhood created."
@@ -51,6 +53,7 @@ class NeighborhoodsController < ApplicationController
 
   def set_neighborhood
     @neighborhood = Neighborhood.find(params[:id])
+    authorize @neighborhood
   end
 
   def neighborhood_params

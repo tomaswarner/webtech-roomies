@@ -3,7 +3,9 @@
 
 <div class="container">
   <div class="d-flex justify-content-end mb-3">
-    <%= link_to new_property_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New property<% end %>
+    <% if policy(Property).create? %>
+      <%= link_to new_property_path, class: "btn btn-primary" do %><i class="bi bi-plus-lg"></i> New property<% end %>
+    <% end %>
   </div>
   <% if @properties.any? %>
     <div class="row g-4">
